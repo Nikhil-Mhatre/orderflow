@@ -6,8 +6,12 @@
  */
 
 import express, { type Express, type Request, type Response } from "express";
+import { pinoHttp } from "pino-http";
 
 import { env } from "./config/env.js";
+import { logger } from "./config/logger.js";
+import { errorMiddleware } from "./middleware/error.middleware.js";
+import { notFoundMiddleware } from "./middleware/not-found.middleware.js";
 
 /**
  * Creates the Express application.
@@ -18,15 +22,23 @@ function createApp(): Express {
   const app = express();
 
   /**
+   * Register HTTP request logging first so that every request
+   * receives a request ID and is included in the logs.
+   */
+  app.use(
+    pinoHttp({
+      logger,
+      autoLogging: true,
+    }),
+  );
+
+  /**
    * Parse incoming JSON request bodies.
    */
   app.use(express.json());
 
   /**
    * Health check endpoint.
-   *
-   * This endpoint is used by local development tools, Docker,
-   * load balancers, and later Kubernetes health checks.
    */
   app.get("/health", (_request: Request, response: Response): void => {
     response.status(200).json({
@@ -37,6 +49,20 @@ function createApp(): Express {
       timestamp: new Date().toISOString(),
     });
   });
+
+  /**
+   * Handle requests that did not match any route.
+   *
+   * This must be registered after all application routes.
+   */
+  app.use(notFoundMiddleware);
+
+  /**
+   * Global error handler.
+   *
+   * This must be the final middleware in the application.
+   */
+  app.use(errorMiddleware);
 
   return app;
 }

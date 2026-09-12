@@ -1,30 +1,33 @@
 /**
  * HTTP server entry point.
  *
- * The application verifies database connectivity before starting
- * the HTTP server. If the database remains unavailable after the
- * configured retries, the process exits gracefully.
+ * The application verifies PostgreSQL connectivity before
+ * starting the HTTP server.
+ *
+ * If PostgreSQL remains unavailable after all retry attempts,
+ * the application logs the failure, closes the database pool,
+ * and exits without starting the HTTP server.
  */
 
 import app from "./app.js";
 import { env } from "./config/env.js";
+import { logger } from "./config/logger.js";
 import { checkDatabaseConnection, db } from "./db/client.js";
-import { logError, logInfo } from "./config/logger.js";
 
 /**
- * Maximum number of database connection attempts.
+ * Maximum number of PostgreSQL connection attempts.
  */
 const DATABASE_MAX_RETRIES = 5;
 
 /**
- * Delay between database connection attempts in milliseconds.
+ * Delay between PostgreSQL connection attempts.
  */
 const DATABASE_RETRY_DELAY_MS = 3_000;
 
 /**
- * Pauses execution for the specified number of milliseconds.
+ * Waits for the specified duration.
  *
- * @param milliseconds - Delay duration.
+ * @param milliseconds - Duration to wait in milliseconds.
  * @returns A promise that resolves after the delay.
  */
 function wait(milliseconds: number): Promise<void> {
@@ -34,35 +37,56 @@ function wait(milliseconds: number): Promise<void> {
 }
 
 /**
- * Verifies database connectivity with retries.
+ * Checks PostgreSQL connectivity with a limited number of retries.
  *
- * @throws {Error} If all connection attempts fail.
+ * @throws {Error} If all PostgreSQL connection attempts fail.
  */
 async function connectToDatabaseWithRetry(): Promise<void> {
   for (let attempt = 1; attempt <= DATABASE_MAX_RETRIES; attempt += 1) {
     try {
-      logInfo("Checking PostgreSQL connectivity.", {
-        attempt,
-        maxAttempts: DATABASE_MAX_RETRIES,
-      });
+      logger.info(
+        {
+          attempt,
+          maxAttempts: DATABASE_MAX_RETRIES,
+        },
+        "Checking PostgreSQL connectivity",
+      );
 
       await checkDatabaseConnection();
 
-      logInfo("PostgreSQL connection established.");
+      logger.info(
+        {
+          host: env.database.host,
+          port: env.database.port,
+          database: env.database.name,
+        },
+        "PostgreSQL connection established",
+      );
 
       return;
     } catch (error: unknown) {
-      logError("PostgreSQL connection attempt failed.", error);
+      logger.error(
+        {
+          err: error,
+          attempt,
+          maxAttempts: DATABASE_MAX_RETRIES,
+        },
+        "PostgreSQL connection attempt failed",
+      );
 
       if (attempt === DATABASE_MAX_RETRIES) {
-        throw new Error(`PostgreSQL connection failed after ${DATABASE_MAX_RETRIES} attempts.`, {
+        throw new Error(`PostgreSQL connection failed after ${DATABASE_MAX_RETRIES} attempts`, {
           cause: error,
         });
       }
 
-      logInfo("Retrying PostgreSQL connection.", {
-        retryInMilliseconds: DATABASE_RETRY_DELAY_MS,
-      });
+      logger.info(
+        {
+          retryInMilliseconds: DATABASE_RETRY_DELAY_MS,
+          nextAttempt: attempt + 1,
+        },
+        "Retrying PostgreSQL connection",
+      );
 
       await wait(DATABASE_RETRY_DELAY_MS);
     }
@@ -70,44 +94,61 @@ async function connectToDatabaseWithRetry(): Promise<void> {
 }
 
 /**
- * Starts the HTTP server only after PostgreSQL is available.
+ * Starts the HTTP server after PostgreSQL connectivity is verified.
  */
 async function startServer(): Promise<void> {
   try {
     await connectToDatabaseWithRetry();
 
     const server = app.listen(env.port, () => {
-      logInfo("Order API server started.", {
-        service: env.service.name,
-        version: env.service.version,
-        environment: env.nodeEnv,
-        port: env.port,
-      });
+      logger.info(
+        {
+          port: env.port,
+          service: env.service.name,
+          version: env.service.version,
+          environment: env.nodeEnv,
+        },
+        "Order API server started",
+      );
     });
 
     /**
-     * Gracefully shut down the HTTP server and database pool.
+     * Prevents multiple shutdown attempts from running simultaneously.
+     */
+    let isShuttingDown = false;
+
+    /**
+     * Gracefully shuts down the HTTP server and PostgreSQL pool.
+     *
+     * @param signal - Operating-system signal that triggered shutdown.
      */
     function shutdown(signal: string): void {
-      logInfo("Shutdown signal received.", {
-        signal,
-      });
+      if (isShuttingDown) {
+        logger.warn({ signal }, "Shutdown already in progress");
+
+        return;
+      }
+
+      isShuttingDown = true;
+
+      logger.info({ signal }, "Shutdown signal received");
 
       server.close((serverError?: Error) => {
         if (serverError) {
-          logError("HTTP server shutdown failed.", serverError);
+          logger.error({ err: serverError }, "HTTP server shutdown failed");
+
           process.exitCode = 1;
         } else {
-          logInfo("HTTP server closed.");
+          logger.info("HTTP server closed");
         }
 
         void db
           .end()
           .then(() => {
-            logInfo("PostgreSQL connection pool closed.");
+            logger.info("PostgreSQL connection pool closed");
           })
           .catch((databaseError: unknown) => {
-            logError("PostgreSQL connection pool shutdown failed.", databaseError);
+            logger.error({ err: databaseError }, "PostgreSQL connection pool shutdown failed");
 
             process.exitCode = 1;
           });
@@ -122,12 +163,31 @@ async function startServer(): Promise<void> {
       shutdown("SIGTERM");
     });
   } catch (error: unknown) {
-    logError("Application startup failed. The HTTP server will not start.", error);
+    logger.fatal(
+      {
+        err: error,
+      },
+      "Application startup failed; HTTP server will not start",
+    );
 
-    await db.end();
+    try {
+      await db.end();
+
+      logger.info("PostgreSQL connection pool closed");
+    } catch (databaseError: unknown) {
+      logger.error(
+        {
+          err: databaseError,
+        },
+        "Failed to close PostgreSQL connection pool during startup failure",
+      );
+    }
 
     process.exitCode = 1;
   }
 }
 
+/**
+ * Start the application.
+ */
 void startServer();

@@ -1,47 +1,41 @@
 /**
- * Minimal application logger.
+ * Application logger.
  *
- * This is intentionally small for the initial project foundation.
- * A structured logger can be introduced later.
+ * Pino provides structured JSON logging for the application.
+ *
+ * In development, logs are formatted for readability.
+ * In production, logs remain JSON so they can be consumed by
+ * log aggregation systems such as CloudWatch.
  */
 
-/**
- * Logs an informational message.
- *
- * @param message - Message to log.
- * @param metadata - Optional additional structured data.
- */
-export function logInfo(message: string, metadata?: Record<string, unknown>): void {
-  console.log(
-    JSON.stringify({
-      level: "info",
-      message,
-      timestamp: new Date().toISOString(),
-      ...metadata,
-    }),
-  );
-}
+import pino from "pino";
+
+import { env } from "./env.js";
 
 /**
- * Logs an error message.
- *
- * @param message - Error description.
- * @param error - Optional error object or additional metadata.
+ * Application logger instance.
  */
-export function logError(message: string, error?: unknown): void {
-  console.error(
-    JSON.stringify({
-      level: "error",
-      message,
-      timestamp: new Date().toISOString(),
-      error:
-        error instanceof Error
-          ? {
-              name: error.name,
-              message: error.message,
-              stack: error.stack,
-            }
-          : error,
-    }),
-  );
-}
+export const logger = pino({
+  level: env.nodeEnv === "development" ? "debug" : "info",
+
+  base: {
+    service: env.service.name,
+    version: env.service.version,
+    environment: env.nodeEnv,
+  },
+
+  timestamp: pino.stdTimeFunctions.isoTime,
+
+  ...(env.nodeEnv === "development"
+    ? {
+        transport: {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:standard",
+            ignore: "pid,hostname",
+          },
+        },
+      }
+    : {}),
+});
