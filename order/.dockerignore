@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+
+# Tests
+tests/
+coverage/
+.nyc_output/
+
+# Documentation
+README.md
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# TypeScript cache
+*.tsbuildinfo
