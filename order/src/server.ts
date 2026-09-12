@@ -12,7 +12,7 @@ import app from "./app.js";
 import { env } from "./config/env.js";
 import { logger } from "./config/logger.js";
 import { connectToDatabase } from "./db/connection.js";
-import { db } from "./db/client.js";
+import { db, pool } from "./db/client.js";
 import { createShutdownHandler } from "./shutdown/shutdown.js";
 
 /**
@@ -52,7 +52,7 @@ async function startServer(): Promise<void> {
     );
 
     try {
-      await db.end();
+      await pool.end();
 
       logger.info("PostgreSQL connection pool closed");
     } catch (databaseError: unknown) {

@@ -9,7 +9,7 @@
 import type { Server } from "node:http";
 
 import { logger } from "../config/logger.js";
-import { db } from "../db/client.js";
+import { db, pool } from "../db/client.js";
 
 /**
  * Creates a graceful shutdown handler for the application.
@@ -60,7 +60,7 @@ export function createShutdownHandler(server: Server): (signal: string) => void 
  */
 async function closeDatabase(): Promise<void> {
   try {
-    await db.end();
+    await pool.end();
 
     logger.info("PostgreSQL connection pool closed");
   } catch (error: unknown) {

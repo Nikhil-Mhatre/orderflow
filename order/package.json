@@ -7,7 +7,11 @@
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "start": "tsx dist/server.js"
+    "start": "tsx dist/server.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +30,7 @@
   },
   "dependencies": {
     "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "pg": "^8.23.0",
     "pino": "^10.3.1",
@@ -38,6 +43,7 @@
     "@types/node": "^22.20.2",
     "@types/pg": "^8.23.1",
     "@types/pino-http": "^6.1.0",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }

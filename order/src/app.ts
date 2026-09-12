@@ -1,29 +1,42 @@
-/**
- * Express application configuration.
- *
- * This module creates and configures the Express application.
- * The HTTP server is started separately in server.ts.
- */
-
-import express, { type Express, type Request, type Response } from "express";
+import express from "express";
 import { pinoHttp } from "pino-http";
 
 import { env } from "./config/env.js";
 import { logger } from "./config/logger.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import { notFoundMiddleware } from "./middleware/not-found.middleware.js";
+import orderRoutes from "./routes/order.routes.js";
 
 /**
- * Creates the Express application.
+ * Creates and configures the Express application.
  *
- * @returns Configured Express application.
+ * This function only builds the application instance.
+ * It does not:
+ * - open a database connection;
+ * - start listening on a port;
+ * - execute business logic;
+ * - manage process shutdown.
+ *
+ * Those responsibilities belong to server.ts and the relevant
+ * service or lifecycle modules.
  */
-function createApp(): Express {
+function createApp(): express.Express {
   const app = express();
 
-  /**
-   * Register HTTP request logging first so that every request
-   * receives a request ID and is included in the logs.
+  /*
+   * --------------------------------------------------------------------------
+   * 1. Request logging
+   * --------------------------------------------------------------------------
+   *
+   * pino-http creates a request-scoped logger and records HTTP request
+   * information such as:
+   * - HTTP method;
+   * - request URL;
+   * - response status code;
+   * - response duration;
+   * - request ID.
+   *
+   * It also makes request.log available inside route handlers and middleware.
    */
   app.use(
     pinoHttp({
@@ -32,15 +45,39 @@ function createApp(): Express {
     }),
   );
 
-  /**
-   * Parse incoming JSON request bodies.
+  /*
+   * --------------------------------------------------------------------------
+   * 2. Request body parsing
+   * --------------------------------------------------------------------------
+   *
+   * This middleware parses JSON request bodies and makes the parsed object
+   * available through request.body.
+   *
+   * The size limit prevents unnecessarily large JSON payloads from reaching
+   * the application. The value can be adjusted as the API evolves.
    */
-  app.use(express.json());
+  app.use(
+    express.json({
+      limit: "1mb",
+    }),
+  );
 
-  /**
-   * Health check endpoint.
+  /*
+   * --------------------------------------------------------------------------
+   * 3. Basic service health endpoint
+   * --------------------------------------------------------------------------
+   *
+   * This endpoint confirms that the HTTP application is running.
+   *
+   * It does not verify PostgreSQL or other dependencies. That distinction is
+   * useful for Kubernetes and load-balancer health checks:
+   *
+   * - liveness: Is the process responding?
+   * - readiness: Can the process safely receive traffic?
+   *
+   * A separate readiness endpoint can be added later to check dependencies.
    */
-  app.get("/health", (_request: Request, response: Response): void => {
+  app.get("/health", (_request, response) => {
     response.status(200).json({
       status: "ok",
       service: env.service.name,
@@ -50,17 +87,39 @@ function createApp(): Express {
     });
   });
 
-  /**
-   * Handle requests that did not match any route.
+  /*
+   * --------------------------------------------------------------------------
+   * 4. API routes
+   * --------------------------------------------------------------------------
    *
-   * This must be registered after all application routes.
+   * Order-related endpoints are grouped in order.routes.ts.
+   *
+   * Keeping route definitions in a separate module prevents app.ts from
+   * becoming a large file as more resources are introduced.
+   */
+  app.use(orderRoutes);
+
+  /*
+   * --------------------------------------------------------------------------
+   * 5. Not-found middleware
+   * --------------------------------------------------------------------------
+   *
+   * Express reaches this middleware only when no previous route matched
+   * the incoming request.
+   *
+   * It must be registered after all valid routes.
    */
   app.use(notFoundMiddleware);
 
-  /**
-   * Global error handler.
+  /*
+   * --------------------------------------------------------------------------
+   * 6. Centralized error middleware
+   * --------------------------------------------------------------------------
    *
-   * This must be the final middleware in the application.
+   * This must be the final middleware in the chain.
+   *
+   * It converts application errors into HTTP responses and prevents internal
+   * error details from being exposed to clients.
    */
   app.use(errorMiddleware);
 
@@ -68,7 +127,9 @@ function createApp(): Express {
 }
 
 /**
- * Configured Express application instance.
+ * Export a fully configured Express application.
+ *
+ * server.ts imports this application and decides when to call app.listen().
  */
 const app = createApp();
 
