@@ -1,4 +1,4 @@
-import { check, integer, index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { check, index, integer, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import type { OrderStatus } from "../types/order.types.js";
@@ -43,11 +43,8 @@ export const orders = pgTable(
     index("idx_orders_created_at").on(table.createdAt),
     index("idx_orders_status").on(table.status),
 
-    check("orders_quantity_positive", sql`${table.quantity} > 0`),
+    check("orders_quantity_positive", sql`"quantity" > 0`),
 
-    check(
-      "orders_status_valid",
-      sql`${table.status} IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED')`,
-    ),
+    check("orders_status_valid", sql`"status" IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED')`),
   ],
 );

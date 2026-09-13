@@ -6,8 +6,8 @@ CREATE TABLE "orders" (
 	"status" varchar(20) DEFAULT 'PENDING' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "orders_quantity_positive" CHECK ("orders"."quantity" > 0),
-	CONSTRAINT "orders_status_valid" CHECK ("orders"."status" IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'))
+	CONSTRAINT "orders_quantity_positive" CHECK ("quantity" > 0),
+	CONSTRAINT "orders_status_valid" CHECK ("status" IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'))
 );
 --> statement-breakpoint
 CREATE INDEX "idx_orders_created_at" ON "orders" USING btree ("created_at");--> statement-breakpoint

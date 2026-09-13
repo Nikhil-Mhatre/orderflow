@@ -2,17 +2,19 @@ import "dotenv/config";
 
 import { defineConfig } from "drizzle-kit";
 
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL is not defined");
+}
+
 export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./src/db/migrations",
   dialect: "postgresql",
 
   dbCredentials: {
-    host: process.env.DATABASE_HOST ?? "localhost",
-    port: Number(process.env.DATABASE_PORT ?? 5432),
-    database: process.env.DATABASE_NAME ?? "orderflow",
-    user: process.env.DATABASE_USER ?? "orderflow",
-    password: process.env.DATABASE_PASSWORD ?? "",
+    url: databaseUrl,
   },
 
   strict: true,

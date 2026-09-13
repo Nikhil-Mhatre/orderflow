@@ -1,5 +1,5 @@
 {
-  "id": "6e3205b1-b94c-4627-827e-4ff7f5af9e99",
+  "id": "c786a7d8-4ce0-41b4-95a5-42a54f005001",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -94,11 +94,11 @@
       "checkConstraints": {
         "orders_quantity_positive": {
           "name": "orders_quantity_positive",
-          "value": "\"orders\".\"quantity\" > 0"
+          "value": "\"quantity\" > 0"
         },
         "orders_status_valid": {
           "name": "orders_status_valid",
-          "value": "\"orders\".\"status\" IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED')"
+          "value": "\"status\" IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED')"
         }
       },
       "isRLSEnabled": false

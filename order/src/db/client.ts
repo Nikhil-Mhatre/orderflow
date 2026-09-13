@@ -5,11 +5,7 @@ import { env } from "../config/env.js";
 import * as schema from "./schema.js";
 
 export const pool = new Pool({
-  host: env.database.host,
-  port: env.database.port,
-  database: env.database.name,
-  user: env.database.user,
-  password: env.database.password,
+  connectionString: env.database.url,
   max: 10,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,

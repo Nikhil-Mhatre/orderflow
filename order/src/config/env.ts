@@ -67,11 +67,7 @@ export const env = {
    * PostgreSQL connection settings.
    */
   database: {
-    host: getRequiredEnv("DATABASE_HOST"),
-    port: parseNumber(process.env.DATABASE_PORT, 5432),
-    name: getRequiredEnv("DATABASE_NAME"),
-    user: getRequiredEnv("DATABASE_USER"),
-    password: getRequiredEnv("DATABASE_PASSWORD"),
+    url: getRequiredEnv("DATABASE_URL"),
   },
 
   /**
