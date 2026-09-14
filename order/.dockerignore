@@ -1,43 +1,61 @@
 # Dependencies
+
 node_modules/
 
 # Git
+
 .git/
 .gitignore
 
 # Environment files
+
 .env
-.env.*
+.env.\*
 !.env.example
 
 # Build output
+
 dist/
 
 # Tests
+
 tests/
 coverage/
 .nyc_output/
 
 # Documentation
+
 README.md
 
 # IDE
+
 .vscode/
 .idea/
 
 # OS
+
 .DS_Store
 Thumbs.db
 
 # Logs
-*.log
+
+_.log
 logs/
+npm-debug.log_
+pnpm-debug.log\*
 
 # Temporary files
-*.tmp
-*.temp
+
+_.tmp
+_.temp
 .tmp/
 .temp/
 
 # TypeScript cache
-*.tsbuildinfo
+
+\*.tsbuildinfo
+
+# Dockerfile
+
+Dockerfile*
+docker-compose*.yml
