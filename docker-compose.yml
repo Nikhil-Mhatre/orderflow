@@ -1,0 +1,93 @@
+# Docker Compose configuration for local OrderFlow development.
+#
+# AWS EventBridge and SQS are intentionally not emulated here.
+# The Order API connects to the real AWS services using the AWS SDK and the
+# developer's normal AWS credential chain.
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL
+  # ---------------------------------------------------------------------------
+  #
+  # PostgreSQL is run locally so the Order API can exercise the same database
+  # technology used by the application without requiring an external database.
+  postgres:
+    image: postgres:18-alpine
+
+    container_name: orderflow-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: orderflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d orderflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Order API
+  # ---------------------------------------------------------------------------
+  order-api:
+    build:
+      context: .
+      dockerfile: apps/order-api/Dockerfile.dev
+
+    container_name: orderflow-order-api
+
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "3001:3001"
+
+    env_file:
+      - ./apps/order-api/.env.dev
+
+    environment:
+      # Containers communicate through the Compose service name rather than
+      # localhost. Override DATABASE_URL from .env accordingly.
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orderflow
+
+    volumes:
+      # Mount application source for development hot reload.
+      - ./apps/order-api/src:/workspace/apps/order-api/src
+
+      # Mount service configuration files that may change during development.
+      - ./apps/order-api/.env:/workspace/apps/order-api/.env
+
+      # Keep container-installed dependencies separate from the host filesystem.
+      - order_api_node_modules:/workspace/node_modules
+      - order_api_app_node_modules:/workspace/apps/order-api/node_modules
+      # Host AWS credentials/configuration → container.
+      # Read-only so the container cannot modify them.
+      - ${USERPROFILE}/.aws:/root/.aws:ro
+
+    # The Dockerfile already defines the development command.
+    # Keeping it there avoids duplicating the command between Dockerfile
+    # and Compose.
+
+# ---------------------------------------------------------------------------
+# Named volumes
+# ---------------------------------------------------------------------------
+#
+# Named volumes persist data across container recreation while keeping
+# development dependencies and PostgreSQL data outside the Git repository.
+volumes:
+  postgres_data:
+  order_api_node_modules:
+  order_api_app_node_modules:

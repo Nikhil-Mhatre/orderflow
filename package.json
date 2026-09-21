@@ -1,0 +1,29 @@
+{
+  "name": "orderflow",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@12.4.1",
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter order-api dev",
+    "dev:worker": "pnpm --filter order-worker dev",
+    "dev:all": "pnpm --parallel --filter './apps/*' dev",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter web build",
+    "build:api": "pnpm --filter order-api build",
+    "build:worker": "pnpm --filter order-worker build",
+    "test": "pnpm -r test",
+    "test:web": "pnpm --filter web test",
+    "test:api": "pnpm --filter order-api test",
+    "test:worker": "pnpm --filter order-worker test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck",
+    "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}

@@ -1,0 +1,28 @@
+// apps/order-api/tsconfig.json
+
+{
+  // Use the shared Node.js TypeScript configuration.
+  //
+  // This provides the repository-wide compiler policy plus Node.js-specific
+  // module and runtime settings.
+  "extends": "@orderflow/typescript-config/node",
+
+  "compilerOptions": {
+    // All application source code lives under src/.
+    "rootDir": "./src",
+
+    // Compiled JavaScript is emitted into dist/.
+    "outDir": "./dist",
+
+    // The shared base configuration is intended primarily for type-checking.
+    // The API needs to emit JavaScript for its production container.
+    "noEmit": false
+  },
+
+  // Only application source is compiled by this project.
+  "include": ["src/**/*.ts"],
+
+  // Dependencies, generated output, tests, and coverage artifacts are not
+  // part of the production application compilation.
+  "exclude": ["node_modules", "dist", "coverage"]
+}

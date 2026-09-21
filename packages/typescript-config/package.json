@@ -1,0 +1,10 @@
+{
+  "name": "@orderflow/typescript-config",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Shared TypeScript configuration presets for OrderFlow",
+  "exports": {
+    "./base": "./base.json",
+    "./node": "./node.json"
+  }
+}
