@@ -1,0 +1,24 @@
+{
+  // Use the shared Node.js TypeScript configuration.
+  //
+  // This keeps the worker aligned with the repository-wide TypeScript
+  // and Node.js runtime configuration.
+  "extends": "@orderflow/typescript-config/node",
+
+  "compilerOptions": {
+    // All worker application source code lives under src/.
+    "rootDir": "./src",
+
+    // TypeScript emits compiled JavaScript into dist/.
+    "outDir": "./dist",
+
+    // Production Docker image runs the compiled JavaScript.
+    "noEmit": false
+  },
+
+  // Compile only the worker application source.
+  "include": ["src/**/*.ts"],
+
+  // Do not compile dependencies, generated files, or test artifacts.
+  "exclude": ["node_modules", "dist", "coverage"]
+}

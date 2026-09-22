@@ -1,0 +1,47 @@
+# Use a current LTS Node.js image for local development.
+FROM node:24-bookworm-slim
+
+# Enable pnpm through Corepack.
+RUN corepack enable
+
+# Keep the application inside a predictable working directory.
+WORKDIR /workspace
+
+# Copy workspace manifests first.
+#
+# Docker can cache dependency installation as long as these files don't
+# change. Source-code changes will therefore not reinstall dependencies.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+
+# Copy package manifests for the workspace packages required by order-worker.
+COPY apps/order-worker/package.json apps/order-worker/package.json
+COPY packages/contracts/package.json packages/contracts/package.json
+COPY packages/eslint-config/package.json packages/eslint-config/package.json
+COPY packages/typescript-config/package.json packages/typescript-config/package.json
+
+# Install the complete workspace dependency graph.
+#
+# The workspace packages are copied above because pnpm needs their manifests
+# to resolve workspace:* dependencies correctly.
+RUN pnpm install --frozen-lockfile
+
+# Copy the source/configuration required by the Order Worker.
+COPY apps/order-worker apps/order-worker
+
+# Copy shared configuration packages used by the Order Worker.
+COPY packages/eslint-config packages/eslint-config
+COPY packages/contracts packages/contracts
+COPY packages/typescript-config packages/typescript-config
+
+# Build shared contracts before starting the Order Worker.
+#
+# @orderflow/contracts exposes compiled files from dist through its
+# package.json exports. The Order Worker therefore needs the contracts
+# package to be built before tsx starts the application.
+RUN pnpm --filter @orderflow/contracts build
+
+# Development command.
+#
+# tsx watch runs the TypeScript application directly and restarts it when
+# source files change.
+CMD ["pnpm", "--filter", "@orderflow/order-worker", "dev"]

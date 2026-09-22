@@ -1,0 +1,41 @@
+# Dependencies are installed during the Docker build.
+
+node_modules
+
+# Build output is generated inside the image.
+
+dist
+
+# Tests and coverage are not required in the production image.
+
+coverage
+test-results
+
+# Environment files must never be copied into the image.
+
+.env
+.env.*
+!.env.example
+
+# Local development files.
+
+.vscode
+.idea
+
+# Logs and temporary files.
+
+*.log
+logs
+tmp
+.temp
+.cache
+
+# Git metadata.
+
+.git
+.gitignore
+
+# Local OS files.
+
+.DS_Store
+Thumbs.db

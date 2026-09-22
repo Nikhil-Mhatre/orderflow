@@ -8,7 +8,7 @@
 
 packages:
   # Independently buildable and deployable microservices/applications.
-  - "apps/*"
+  # - "apps/*"
 
   # Shared development/tooling configuration only.
   # Do not place business/domain/runtime code here unless we make an
@@ -22,3 +22,4 @@ packages:
 # package rather than enabling build scripts globally.
 allowBuilds:
   esbuild: true
+  unrs-resolver: set this to true or false
