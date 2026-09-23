@@ -2,7 +2,7 @@ import {
   ORDER_CREATED_EVENT_TYPE,
   ORDER_CREATED_EVENT_VERSION,
   type OrderCreatedEvent,
-} from "@orderflow/contracts";
+} from "../../events/order-created.js";
 
 // -----------------------------------------------------------------------------
 // OrderCreated event input

@@ -1,4 +1,4 @@
-import type { OrderCreatedEvent } from "@orderflow/contracts";
+import type { OrderCreatedEvent } from "../events/order-created.js";
 
 // -----------------------------------------------------------------------------
 // Event publisher contract

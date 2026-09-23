@@ -14,8 +14,5 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# API port
-EXPOSE 3000
-
 # Development server
 CMD ["pnpm", "dev"]

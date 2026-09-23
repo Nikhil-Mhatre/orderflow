@@ -3,7 +3,7 @@ import {
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
 
-import type { OrderCreatedEvent } from "@orderflow/contracts";
+import type { OrderCreatedEvent } from "../events/order-created.js";
 
 import { env } from "../config/env.js";
 import type { EventPublisher } from "./event-publisher.js";

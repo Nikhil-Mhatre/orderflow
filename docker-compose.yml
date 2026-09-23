@@ -1,126 +1,71 @@
-# Docker Compose configuration for local OrderFlow development.
-#
-# AWS EventBridge and SQS are intentionally not emulated here.
-# The Order API publishes to EventBridge and the Order Worker consumes
-# from the real AWS SQS queue using the AWS SDK and the developer's
-# normal AWS credential chain.
-
 services:
-  # ---------------------------------------------------------------------------
-  # PostgreSQL
-  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: orderflow-web
+    env_file:
+      - ./frontend/.env.dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: pnpm dev
+
+  api:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile.dev
+    container_name: orderflow-api
+    env_file:
+      - ./backend/api/.env.dev
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/api:/app
+      - api_node_modules:/app/node_modules
+      - ${USERPROFILE}/.aws:/root/.aws:ro
+    command: pnpm dev
+
+  worker:
+    build:
+      context: ./backend/worker
+      dockerfile: Dockerfile.dev
+    container_name: orderflow-worker
+    env_file:
+      - ./backend/worker/.env.dev
+    volumes:
+      - ./backend/worker:/app
+      - worker_node_modules:/app/node_modules
+      - ${USERPROFILE}/.aws:/root/.aws:ro
+    command: pnpm dev
+
   postgres:
     image: postgres:18-alpine
-
     container_name: orderflow-postgres
-
-    restart: unless-stopped
-
     environment:
-      POSTGRES_DB: orderflow
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-
+      POSTGRES_DB: orderflow
     ports:
       - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql
-
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d orderflow"]
       interval: 5s
       timeout: 5s
-      retries: 10
-      start_period: 10s
+      retries: 5
 
-  # ---------------------------------------------------------------------------
-  # Order API
-  # ---------------------------------------------------------------------------
-  order-api:
-    build:
-      context: .
-      dockerfile: apps/order-api/Dockerfile.dev
-
-    container_name: orderflow-order-api
-
-    restart: unless-stopped
-
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-    ports:
-      - "3001:3001"
-
-    env_file:
-      - ./apps/order-api/.env.dev
-
-    environment:
-      # Containers communicate through the Compose service name rather than
-      # localhost.
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orderflow
-
-    volumes:
-      # Application source for development hot reload.
-      - ./apps/order-api/src:/workspace/apps/order-api/src
-
-      # Service environment/configuration.
-      - ./apps/order-api/.env:/workspace/apps/order-api/.env
-
-      # Keep container-installed dependencies separate from the host.
-      - order_api_node_modules:/workspace/node_modules
-      - order_api_app_node_modules:/workspace/apps/order-api/node_modules
-
-      # Host AWS credentials/configuration → container.
-      # Read-only so the container cannot modify them.
-      - ${USERPROFILE}/.aws:/root/.aws:ro
-
-  # ---------------------------------------------------------------------------
-  # Order Worker
-  # ---------------------------------------------------------------------------
-  order-worker:
-    build:
-      context: .
-      dockerfile: apps/order-worker/Dockerfile.dev
-
-    container_name: orderflow-order-worker
-
-    restart: unless-stopped
-
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-    env_file:
-      - ./apps/order-worker/.env.dev
-
-    environment:
-      # Containers communicate through the Compose service name rather than
-      # localhost.
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orderflow
-
-    volumes:
-      # Application source for development hot reload.
-      - ./apps/order-worker/src:/workspace/apps/order-worker/src
-
-      # Service environment/configuration.
-      - ./apps/order-worker/.env:/workspace/apps/order-worker/.env
-
-      # Keep container-installed dependencies separate from the host.
-      - order_worker_node_modules:/workspace/node_modules
-      - order_worker_app_node_modules:/workspace/apps/order-worker/node_modules
-
-      # Host AWS credentials/configuration → container.
-      # Read-only so the worker can authenticate with SQS.
-      - ${USERPROFILE}/.aws:/root/.aws:ro
-
-# ---------------------------------------------------------------------------
-# Named volumes
-# ---------------------------------------------------------------------------
 volumes:
   postgres_data:
-  order_api_node_modules:
-  order_api_app_node_modules:
-  order_worker_node_modules:
-  order_worker_app_node_modules:
+  api_node_modules:
+  worker_node_modules:
+  frontend_node_modules:
