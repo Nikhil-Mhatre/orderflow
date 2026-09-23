@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "7c6c7d8a-7f5d-4b6e-9f3e-2e9c7c0f5b21",
+    "_postman_id": "6f0f6c4d-6b2d-4c3e-8b6a-2f9f6c1a4d21",
     "name": "OrderFlow API",
-    "description": "Postman collection for testing the OrderFlow API and the asynchronous OrderCreated processing flow.",
+    "description": "Postman collection for testing the OrderFlow API microservice.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -11,16 +11,51 @@
       "value": "http://localhost:3001"
     },
     {
+      "key": "productId",
+      "value": "REPLACE_WITH_PRODUCT_UUID"
+    },
+    {
       "key": "orderId",
-      "value": ""
+      "value": "REPLACE_WITH_ORDER_UUID"
     }
   ],
   "item": [
     {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Orders",
       "item": [
         {
-          "name": "Create Order",
+          "name": "Create Order - Multiple Products",
           "request": {
             "method": "POST",
             "header": [
@@ -31,19 +66,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customerName\": \"Postman Customer\",\n  \"product\": \"Postman Product\",\n  \"quantity\": 2\n}"
+              "raw": "{\n  \"customerName\": \"Test Customer\",\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 1\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/orders",
               "host": ["{{baseUrl}}"],
               "path": ["orders"]
-            },
-            "description": "Creates an order. The API should persist the order and publish an OrderCreated event to EventBridge."
+            }
           },
           "response": []
         },
         {
-          "name": "Get Order",
+          "name": "Get Order By ID",
           "request": {
             "method": "GET",
             "header": [],
@@ -51,8 +85,7 @@
               "raw": "{{baseUrl}}/orders/{{orderId}}",
               "host": ["{{baseUrl}}"],
               "path": ["orders", "{{orderId}}"]
-            },
-            "description": "Retrieves an order by its ID."
+            }
           },
           "response": []
         }

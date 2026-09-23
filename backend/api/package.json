@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "clean": "rm -rf dist coverage"
+    "clean": "rm -rf dist coverage",
+    "db:seed": "tsx src/db/seed/products.seed.ts",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@aws-sdk/client-eventbridge": "^3.1136.0",

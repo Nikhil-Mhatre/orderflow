@@ -1,61 +1,26 @@
+// backend/api/src/modules/orders/order.route.ts
+
 import { Router } from "express";
 
-import { orderController } from "./order.controller.js";
+import {
+  createOrderController,
+  getOrderController,
+} from "./order.controller.js";
 
-// -----------------------------------------------------------------------------
-// Order routes
-// -----------------------------------------------------------------------------
+const orderRouter = Router();
 
 /**
- * Creates the Express router for order-related endpoints.
+ * POST /orders
  *
- * Route handlers delegate all request processing to OrderController.
- *
- * The router does not contain:
- * - Validation logic.
- * - Business logic.
- * - Database access.
- * - Event publishing.
+ * Creates an order containing one or more products.
  */
-export function createOrderRouter(): Router {
-  const router = Router();
+orderRouter.post("/", createOrderController);
 
-  // ---------------------------------------------------------------------------
-  // Order endpoints
-  // ---------------------------------------------------------------------------
+/**
+ * GET /orders/:orderId
+ *
+ * Retrieves an order with its items and total amount.
+ */
+orderRouter.get("/:orderId", getOrderController);
 
-  /**
-   * Create a new order.
-   *
-   * POST /orders
-   */
-  router.post("/", (req, res, next) => {
-    orderController.createOrder(req, res).catch(next);
-  });
-
-  /**
-   * Get all orders.
-   *
-   * GET /orders
-   */
-  router.get("/", (req, res, next) => {
-    orderController.getOrders(req, res).catch(next);
-  });
-
-  /**
-   * Get a single order by ID.
-   *
-   * GET /orders/:id
-   */
-  router.get("/:id", (req, res, next) => {
-    orderController.getOrderById(req, res).catch(next);
-  });
-
-  return router;
-}
-
-// -----------------------------------------------------------------------------
-// Shared router instance
-// -----------------------------------------------------------------------------
-
-export const orderRouter = createOrderRouter();
+export { orderRouter };

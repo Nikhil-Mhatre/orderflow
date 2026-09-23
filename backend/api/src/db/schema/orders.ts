@@ -1,5 +1,3 @@
-// order-api/src/db/schema/orders.ts
-
 import {
   integer,
   pgEnum,
@@ -9,17 +7,12 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { products } from "./products.js";
+
 // -----------------------------------------------------------------------------
 // Order status
 // -----------------------------------------------------------------------------
-//
-// The order lifecycle is intentionally simple:
-//
-// PENDING → PROCESSING → COMPLETED
-//                    └→ FAILED
-//
-// The API creates orders in PENDING state. The worker is responsible for
-// asynchronous processing and subsequent status updates.
+
 export const orderStatusEnum = pgEnum("order_status", [
   "PENDING",
   "PROCESSING",
@@ -28,41 +21,96 @@ export const orderStatusEnum = pgEnum("order_status", [
 ]);
 
 // -----------------------------------------------------------------------------
-// Orders table
+// Orders
 // -----------------------------------------------------------------------------
-//
-// This schema represents the PostgreSQL persistence model for orders owned by
-// the Order API.
-//
-// Keep database concerns here. Business operations and application workflows
-// belong in the orders module, not in the database schema definition.
+
 export const orders = pgTable("orders", {
-  // Public identifier for the order.
+  /**
+   * Unique order identifier.
+   */
   id: uuid("id").defaultRandom().primaryKey(),
 
-  // Customer associated with the order.
+  /**
+   * Customer who placed the order.
+   */
   customerName: text("customer_name").notNull(),
 
-  // Product being ordered.
-  product: text("product").notNull(),
+  /**
+   * Authoritative total amount for the order.
+   *
+   * Stored in the smallest currency unit.
+   *
+   * Example:
+   * $2,897.00 = 289700
+   */
+  totalAmount: integer("total_amount").notNull(),
 
-  // Number of units ordered.
-  quantity: integer("quantity").notNull(),
-
-  // Current processing state of the order.
+  /**
+   * Current order-processing state.
+   */
   status: orderStatusEnum("status").notNull().default("PENDING"),
 
-  // Timestamp indicating when the order was created.
+  /**
+   * Order creation timestamp.
+   */
   createdAt: timestamp("created_at", {
     withTimezone: true,
   })
     .notNull()
     .defaultNow(),
 
-  // Timestamp updated whenever the persisted order state changes.
+  /**
+   * Last order update timestamp.
+   */
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   })
     .notNull()
     .defaultNow(),
+});
+
+// -----------------------------------------------------------------------------
+// Order items
+// -----------------------------------------------------------------------------
+
+export const orderItems = pgTable("order_items", {
+  /**
+   * Unique identifier for the individual order item.
+   */
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  /**
+   * Parent order.
+   *
+   * Deleting an order also deletes its items.
+   */
+  orderId: uuid("order_id")
+    .notNull()
+    .references(() => orders.id, {
+      onDelete: "cascade",
+    }),
+
+  /**
+   * Product that was ordered.
+   */
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id),
+
+  /**
+   * Snapshot of the product name at purchase time.
+   */
+  productName: text("product_name").notNull(),
+
+  /**
+   * Number of units purchased.
+   */
+  quantity: integer("quantity").notNull(),
+
+  /**
+   * Snapshot of the product price at purchase time.
+   *
+   * This protects historical orders if the product price changes later.
+   */
+  unitPrice: integer("unit_price").notNull(),
 });

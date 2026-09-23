@@ -6,6 +6,7 @@ import { errorMiddleware } from "./middleware/error.middleware.js";
 import { notFoundMiddleware } from "./middleware/not-found.middleware.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { orderRouter } from "./modules/orders/order.routes.js";
+import { productRouter } from "./modules/products/product.route.js";
 
 /**
  * Creates and configures the Express application.
@@ -83,6 +84,15 @@ function createApp(): express.Express {
    * corresponding controller methods.
    */
   app.use("/orders", orderRouter);
+
+  /**
+   * Products endpoints:
+   *
+   * GET    /products
+   * GET    /products/:productId
+   *
+   */
+  app.use("/products", productRouter);
 
   // ---------------------------------------------------------------------------
   // 5. Not-found middleware
