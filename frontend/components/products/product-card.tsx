@@ -58,9 +58,12 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
 
       <CardFooter>
-        <Button className="w-full">
-          <Link href={`/checkout?product=${product.id}`}>Order Now</Link>
-        </Button>
+        <Link
+          href={`/checkout?product=${product.id}`}
+          className="inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          Order Now
+        </Link>
       </CardFooter>
     </Card>
   );
