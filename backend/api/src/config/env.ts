@@ -28,6 +28,7 @@ const envSchema = z.object({
 
   // AWS region used by AWS SDK clients.
   AWS_REGION: z.string().trim().min(1).default("ap-south-1"),
+  FRONTEND_URL: z.string().trim().min(1).default("http://localhost:3000"),
 
   // EventBridge bus to which Order API publishes domain events.
   EVENT_BUS_NAME: z.string().trim().min(1).default("orderflow-dev"),
@@ -74,6 +75,8 @@ export const env = {
   nodeEnv: values.NODE_ENV,
 
   port: values.PORT,
+
+  frontendUrl: values.FRONTEND_URL,
 
   database: {
     url: values.DATABASE_URL,

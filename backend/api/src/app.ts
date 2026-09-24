@@ -7,6 +7,8 @@ import { notFoundMiddleware } from "./middleware/not-found.middleware.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { orderRouter } from "./modules/orders/order.routes.js";
 import { productRouter } from "./modules/products/product.route.js";
+import cors from "cors";
+import { env } from "./config/env.js";
 
 /**
  * Creates and configures the Express application.
@@ -24,6 +26,14 @@ import { productRouter } from "./modules/products/product.route.js";
  */
 function createApp(): express.Express {
   const app = express();
+
+  app.use(
+    cors({
+      origin: env.frontendUrl ?? "http://localhost:3000",
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    }),
+  );
 
   // ---------------------------------------------------------------------------
   // 1. Request logging
