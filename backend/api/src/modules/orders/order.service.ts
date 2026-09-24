@@ -1,6 +1,10 @@
-import { createOrder, getOrderById } from "./order.data-access.js";
+import { createOrder, getOrderById, getOrders } from "./order.data-access.js";
 
-import type { CreateOrderInput, OrderResponse } from "./order.types.js";
+import type {
+  CreateOrderInput,
+  GetOrdersQuery,
+  OrderResponse,
+} from "./order.types.js";
 
 // -----------------------------------------------------------------------------
 // Create order
@@ -32,4 +36,15 @@ export async function getOrderService(
   orderId: string,
 ): Promise<OrderResponse | null> {
   return getOrderById(orderId);
+}
+
+// -----------------------------------------------------------------------------
+// Get orders
+// -----------------------------------------------------------------------------
+
+/**
+ * Retrieves all orders together with their order items.
+ */
+export async function getOrdersService(query: GetOrdersQuery) {
+  return getOrders(query);
 }

@@ -1,9 +1,17 @@
 // backend/api/src/modules/orders/order.controller.ts
 
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
-import { createOrderSchema, getOrderParamsSchema } from "./order.validation.js";
-import { createOrderService, getOrderService } from "./order.service.js";
+import {
+  createOrderSchema,
+  getOrderParamsSchema,
+  getOrdersQuerySchema,
+} from "./order.validation.js";
+import {
+  createOrderService,
+  getOrderService,
+  getOrdersService,
+} from "./order.service.js";
 
 // -----------------------------------------------------------------------------
 // Create order
@@ -51,4 +59,32 @@ export async function getOrderController(
   }
 
   res.status(200).json(order);
+}
+
+// -----------------------------------------------------------------------------
+// Get orders
+// -----------------------------------------------------------------------------
+
+/**
+ * GET /orders
+ *
+ * Returns all orders
+ */
+
+export async function getOrdersController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const query = getOrdersQuerySchema.parse(req.query);
+
+    const result = await getOrdersService(query);
+
+    res.status(200).json({
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
 }

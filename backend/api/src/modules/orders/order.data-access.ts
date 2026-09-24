@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 import { db } from "../../db/client.js";
 import { orderItems, orders } from "../../db/schema/orders.js";
@@ -6,7 +6,9 @@ import { products } from "../../db/schema/products.js";
 
 import type {
   CreateOrderInput,
+  GetOrdersQuery,
   OrderItem,
+  OrderListResponse,
   OrderResponse,
 } from "./order.types.js";
 
@@ -179,5 +181,73 @@ export async function getOrderById(
     status: order.status,
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// Get orders
+// -----------------------------------------------------------------------------
+
+/**
+ * Retrieves all orders together with their order items.
+ */
+export async function getOrders(
+  query: GetOrdersQuery,
+): Promise<OrderListResponse> {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 20;
+
+  const offset = (page - 1) * limit;
+
+  const orderRows = await db
+    .select()
+    .from(orders)
+    .orderBy(desc(orders.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const [countRow] = await db
+    .select({
+      count: sql<number>`count(*)`,
+    })
+    .from(orders);
+
+  const total = Number(countRow?.count ?? 0);
+
+  const result: OrderResponse[] = [];
+
+  for (const order of orderRows) {
+    const itemRows = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
+
+    const items: OrderItem[] = itemRows.map((item) => ({
+      id: item.id,
+      productId: item.productId,
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    }));
+
+    result.push({
+      id: order.id,
+      customerName: order.customerName,
+      items,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+    });
+  }
+
+  return {
+    orders: result,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
   };
 }

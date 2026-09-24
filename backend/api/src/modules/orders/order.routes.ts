@@ -5,9 +5,10 @@ import { Router } from "express";
 import {
   createOrderController,
   getOrderController,
+  getOrdersController,
 } from "./order.controller.js";
 
-const orderRouter = Router();
+export const orderRouter = Router();
 
 /**
  * POST /orders
@@ -23,4 +24,9 @@ orderRouter.post("/", createOrderController);
  */
 orderRouter.get("/:orderId", getOrderController);
 
-export { orderRouter };
+/**
+ * GET /orders
+ *
+ * Retrieves all orders together with their order items.
+ */
+orderRouter.get("/", getOrdersController);
