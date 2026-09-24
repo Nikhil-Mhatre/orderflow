@@ -31,7 +31,7 @@ services:
     volumes:
       - ./backend/api:/app
       - api_node_modules:/app/node_modules
-      # - ${USERPROFILE}/.aws:/root/.aws:ro
+      - ${USERPROFILE}/.aws:/root/.aws:ro
     command: pnpm dev
 
   worker:
@@ -44,7 +44,7 @@ services:
     volumes:
       - ./backend/worker:/app
       - worker_node_modules:/app/node_modules
-      # - ${USERPROFILE}/.aws:/root/.aws:ro
+      - ${USERPROFILE}/.aws:/root/.aws:ro
     command: pnpm dev
 
   postgres:

@@ -4,7 +4,7 @@ import type {
   Order,
   OrderRepository,
   OrderStatus,
-} from "../services/order-processing.service.js";
+} from "./order-processing.service.js";
 
 /**
  * PostgreSQL implementation of the OrderRepository interface.

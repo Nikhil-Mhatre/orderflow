@@ -1,13 +1,13 @@
-import { SqsClient } from "./clients/sqs.client.js";
-import { OrderCreatedHandler } from "./handlers/order-created.handler.js";
-import { PostgresOrderRepository } from "./repositories/order.repository.js";
-import { OrderProcessingService } from "./services/order-processing.service.js";
+import { OrderCreatedHandler } from "./orders/order-created.handler.js";
+import { PostgresOrderRepository } from "./orders/order.repository.js";
+import { OrderProcessingService } from "./orders/order-processing.service.js";
 import { OrderWorker } from "./worker/order-worker.js";
 
 import { pool } from "./db/client.db.js";
 import { connectToDatabase } from "./db/connection.db.js";
 import { createShutdownHandler } from "./db/shutdown.db.js";
 import { logger } from "./config/logger.js";
+import { SqsClient } from "./infrastructure/aws/sqs.client.js";
 
 /**
  * Application entry point.

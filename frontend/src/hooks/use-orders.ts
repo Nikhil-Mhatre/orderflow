@@ -13,7 +13,7 @@ export function useOrders() {
     queryFn: getOrders,
 
     refetchInterval: (query) => {
-      const orders = query.state.data?.orders ?? [];
+      const orders = query.state.data?.data ?? [];
 
       const hasActiveOrders = orders.some((order) =>
         ACTIVE_STATUSES.includes(order.status),

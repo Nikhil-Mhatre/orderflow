@@ -1,25 +1,25 @@
+import type { ApiResponse, PaginatedResponse } from "@/types/api";
+
+import type { CreateOrderRequest, Order } from "@/types/orders";
+
 import { apiClient } from "./client";
-import type {
-  CreateOrderRequest,
-  Order,
-  OrderListResponse,
-} from "@/types/orders";
 
-interface ApiResponse<T> {
-  data: T;
+export async function createOrder(input: CreateOrderRequest): Promise<Order> {
+  const response = await apiClient.post<ApiResponse<Order>>("/orders", input);
+
+  return response.data;
 }
 
-export function createOrder(data: CreateOrderRequest): Promise<Order> {
-  return apiClient.post<Order>("/orders", data);
+export async function getOrders(): Promise<PaginatedResponse<Order>> {
+  const response = await apiClient.get<PaginatedResponse<Order>>("/orders");
+
+  return response;
 }
 
-export function getOrder(orderId: string): Promise<Order> {
-  return apiClient.get<Order>(`/orders/${orderId}`);
-}
-
-export async function getOrders(): Promise<OrderListResponse> {
-  const response =
-    await apiClient.get<ApiResponse<OrderListResponse>>("/orders");
+export async function getOrder(orderId: string): Promise<Order> {
+  const response = await apiClient.get<ApiResponse<Order>>(
+    `/orders/${orderId}`,
+  );
 
   return response.data;
 }

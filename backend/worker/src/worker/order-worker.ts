@@ -1,9 +1,9 @@
 import type { Message } from "@aws-sdk/client-sqs";
 
-import { SqsClient } from "../clients/sqs.client.js";
-import { OrderCreatedHandler } from "../handlers/order-created.handler.js";
-import { OrderProcessingService } from "../services/order-processing.service.js";
+import { OrderCreatedHandler } from "../orders/order-created.handler.js";
+import { OrderProcessingService } from "../orders/order-processing.service.js";
 import { logger } from "../config/logger.js";
+import type { SqsClient } from "../infrastructure/aws/sqs.client.js";
 
 /**
  * Background worker responsible for consuming OrderCreated

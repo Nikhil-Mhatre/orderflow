@@ -1,15 +1,5 @@
 export type OrderStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
-export interface CreateOrderItem {
-  productId: string;
-  quantity: number;
-}
-
-export interface CreateOrderRequest {
-  customerName: string;
-  items: CreateOrderItem[];
-}
-
 export interface OrderItem {
   id: string;
   productId: string;
@@ -28,14 +18,19 @@ export interface Order {
   updatedAt: string;
 }
 
-export interface OrderPagination {
+export interface CreateOrderItem {
+  productId: string;
+  quantity: number;
+}
+
+export interface CreateOrderRequest {
+  customerName: string;
+  items: CreateOrderItem[];
+}
+
+export interface Pagination {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
-}
-
-export interface OrderListResponse {
-  orders: Order[];
-  pagination: OrderPagination;
 }

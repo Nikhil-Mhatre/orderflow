@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
 
 export default function OrdersPage() {
-  const { data, isLoading, isError, error, isFetching } = useOrders();
-  const orders = data?.orders ?? [];
+  const { data: order, isLoading, isError, error, isFetching } = useOrders();
+  const orders = order?.data ?? [];
 
   if (isLoading) {
     return (

@@ -1,12 +1,19 @@
-import { apiClient } from "./client";
+import type { ApiResponse } from "@/types/api";
 import type { Product, ProductsResponse } from "@/types/products";
 
-export async function getProducts(): Promise<Product[]> {
-  const response = await apiClient.get<ProductsResponse>("/products");
+import { apiClient } from "./client";
 
-  return response.products;
+export async function getProducts(): Promise<Product[]> {
+  const response =
+    await apiClient.get<ApiResponse<ProductsResponse>>("/products");
+  console.log(response.data.products);
+  return response.data.products;
 }
 
 export async function getProduct(productId: string): Promise<Product> {
-  return apiClient.get<Product>(`/products/${productId}`);
+  const response = await apiClient.get<ApiResponse<Product>>(
+    `/products/${productId}`,
+  );
+
+  return response.data;
 }
