@@ -4,7 +4,7 @@
 
 import type { NextFunction, Request, Response } from "express";
 
-import { AppError } from "../errors/app.error.js";
+import { AppError } from "../lib/errors/app.error.js";
 
 /**
  * Express middleware for unmatched routes.
@@ -18,5 +18,10 @@ export function notFoundMiddleware(
   _response: Response,
   next: NextFunction,
 ): void {
-  next(new AppError(`Route not found: ${request.method} ${request.originalUrl}`, 404));
+  next(
+    new AppError(
+      `Route not found: ${request.method} ${request.originalUrl}`,
+      404,
+    ),
+  );
 }

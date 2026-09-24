@@ -1,4 +1,4 @@
-import type { OrderCreatedEvent } from "../events/order-created.js";
+import type { OrderCreatedEvent } from "../lib/events/order-created.js";
 
 // -----------------------------------------------------------------------------
 // Event publisher contract

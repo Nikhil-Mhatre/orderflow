@@ -2,7 +2,7 @@ import {
   ORDER_CREATED_EVENT_TYPE,
   ORDER_CREATED_EVENT_VERSION,
   type OrderCreatedEvent,
-} from "../../events/order-created.js";
+} from "../../lib/events/order-created.js";
 
 // -----------------------------------------------------------------------------
 // OrderCreated event input

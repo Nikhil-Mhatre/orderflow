@@ -1,89 +1,72 @@
-// backend/api/src/modules/orders/order.controller.ts
-
 import type { NextFunction, Request, Response } from "express";
 
+import { sendData, sendPaginated } from "../../lib/http/response.js";
+
+import { orderService } from "./order.service.js";
 import {
   createOrderSchema,
   getOrderParamsSchema,
   getOrdersQuerySchema,
 } from "./order.validation.js";
-import {
-  createOrderService,
-  getOrderService,
-  getOrdersService,
-} from "./order.service.js";
-
-// -----------------------------------------------------------------------------
-// Create order
-// -----------------------------------------------------------------------------
 
 /**
  * POST /orders
  *
- * Creates a new order containing one or more products.
+ * Creates a new order.
  */
 export async function createOrderController(
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> {
-  const input = createOrderSchema.parse(req.body);
+  try {
+    const input = createOrderSchema.parse(req.body);
 
-  const order = await createOrderService(input);
+    const order = await orderService.createOrder(input);
 
-  res.status(201).json(order);
+    sendData(res, order, 201);
+  } catch (error) {
+    next(error);
+  }
 }
-
-// -----------------------------------------------------------------------------
-// Get order
-// -----------------------------------------------------------------------------
 
 /**
  * GET /orders/:orderId
  *
- * Returns a single order with its items and total amount.
+ * Returns a single order.
  */
-export async function getOrderController(
+export async function getOrderByIdController(
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> {
-  const { orderId } = getOrderParamsSchema.parse(req.params);
+  try {
+    const { orderId } = getOrderParamsSchema.parse(req.params);
 
-  const order = await getOrderService(orderId);
+    const order = await orderService.getOrderById(orderId);
 
-  if (!order) {
-    res.status(404).json({
-      message: "Order not found",
-    });
-
-    return;
+    sendData(res, order);
+  } catch (error) {
+    next(error);
   }
-
-  res.status(200).json(order);
 }
-
-// -----------------------------------------------------------------------------
-// Get orders
-// -----------------------------------------------------------------------------
 
 /**
  * GET /orders
  *
- * Returns all orders
+ * Returns a paginated list of orders.
  */
-
 export async function getOrdersController(
   req: Request,
   res: Response,
   next: NextFunction,
-) {
+): Promise<void> {
   try {
     const query = getOrdersQuerySchema.parse(req.query);
 
-    const result = await getOrdersService(query);
+    const result = await orderService.getOrders(query);
 
-    res.status(200).json({
-      data: result,
-    });
+    sendPaginated(res, result.orders, result.pagination);
   } catch (error) {
     next(error);
   }

@@ -11,7 +11,7 @@
 
 import type { ErrorRequestHandler } from "express";
 
-import { AppError } from "../errors/app.error.js";
+import { AppError } from "../lib/errors/app.error.js";
 import { logger } from "../config/logger.js";
 
 /**
@@ -20,7 +20,12 @@ import { logger } from "../config/logger.js";
  * Express identifies an error-handling middleware by its
  * four parameters: error, request, response, and next.
  */
-export const errorMiddleware: ErrorRequestHandler = (error, request, response, _next): void => {
+export const errorMiddleware: ErrorRequestHandler = (
+  error,
+  request,
+  response,
+  _next,
+): void => {
   /**
    * Handle expected application errors.
    */

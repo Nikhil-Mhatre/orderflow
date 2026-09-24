@@ -1,11 +1,10 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
+
+import { AppError } from "../../lib/errors/app.error.js";
+import { sendData } from "../../lib/http/response.js";
 
 import { productService } from "./product.service.js";
 import { getProductParamsSchema } from "./product.validation.js";
-
-// -----------------------------------------------------------------------------
-// Get all products
-// -----------------------------------------------------------------------------
 
 /**
  * GET /products
@@ -15,15 +14,16 @@ import { getProductParamsSchema } from "./product.validation.js";
 export async function getProductsController(
   _req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> {
-  const result = await productService.getAll();
+  try {
+    const products = await productService.getAll();
 
-  res.status(200).json(result);
+    sendData(res, products);
+  } catch (error) {
+    next(error);
+  }
 }
-
-// -----------------------------------------------------------------------------
-// Get product by ID
-// -----------------------------------------------------------------------------
 
 /**
  * GET /products/:productId
@@ -33,18 +33,19 @@ export async function getProductsController(
 export async function getProductByIdController(
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> {
-  const { productId } = getProductParamsSchema.parse(req.params);
+  try {
+    const { productId } = getProductParamsSchema.parse(req.params);
 
-  const product = await productService.getById(productId);
+    const product = await productService.getById(productId);
 
-  if (!product) {
-    res.status(404).json({
-      message: "Product not found",
-    });
+    if (!product) {
+      throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND");
+    }
 
-    return;
+    sendData(res, product);
+  } catch (error) {
+    next(error);
   }
-
-  res.status(200).json(product);
 }

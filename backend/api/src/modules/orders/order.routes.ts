@@ -4,7 +4,7 @@ import { Router } from "express";
 
 import {
   createOrderController,
-  getOrderController,
+  getOrderByIdController,
   getOrdersController,
 } from "./order.controller.js";
 
@@ -22,7 +22,7 @@ orderRouter.post("/", createOrderController);
  *
  * Retrieves an order with its items and total amount.
  */
-orderRouter.get("/:orderId", getOrderController);
+orderRouter.get("/:orderId", getOrderByIdController);
 
 /**
  * GET /orders
