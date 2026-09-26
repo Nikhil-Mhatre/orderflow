@@ -8,4 +8,7 @@ const healthRouter = Router();
 // Used by Kubernetes to determine whether the process is alive.
 healthRouter.get("/health", getHealth);
 
+// Ready Probe
+healthRouter.get("/ready", getHealth);
+
 export { healthRouter };

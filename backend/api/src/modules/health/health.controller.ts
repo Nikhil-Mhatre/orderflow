@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import { checkDatabaseConnection } from "../../db/client.js";
 import { logger } from "../../config/logger.js";
+import { sendData } from "../../lib/http/response.js";
 
 /**
  * Liveness endpoint.
@@ -14,9 +15,7 @@ import { logger } from "../../config/logger.js";
  * Kubernetes to restart a healthy application process.
  */
 export function getHealth(_req: Request, res: Response): void {
-  res.status(200).json({
-    status: "ok",
-  });
+  sendData(res, { status: "ok" }, 200);
 }
 
 /**
@@ -35,12 +34,16 @@ export async function getReadiness(
   try {
     await checkDatabaseConnection();
 
-    res.status(200).json({
-      status: "ok",
-      dependencies: {
-        database: "ok",
+    sendData(
+      res,
+      {
+        status: "ok",
+        dependencies: {
+          database: "ok",
+        },
       },
-    });
+      200,
+    );
   } catch (error) {
     logger.warn(
       {
@@ -49,11 +52,15 @@ export async function getReadiness(
       "Order API is not ready because the database is unavailable",
     );
 
-    res.status(503).json({
-      status: "not_ready",
-      dependencies: {
-        database: "unavailable",
+    sendData(
+      res,
+      {
+        status: "not_ready",
+        dependencies: {
+          database: "unavailable",
+        },
       },
-    });
+      503,
+    );
   }
 }
