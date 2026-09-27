@@ -1,3 +1,7 @@
+# -----------------------------------------------------------------------------
+# VPC Outputs
+# -----------------------------------------------------------------------------
+
 output "vpc_id" {
   description = "ID of the OrderFlow VPC."
   value       = module.vpc.vpc_id
@@ -36,4 +40,23 @@ output "nat_gateway_id" {
 output "vpc_endpoint_security_group_id" {
   description = "Security group ID used by the VPC interface endpoints."
   value       = module.vpc.vpc_endpoint_security_group_id
+}
+
+# -----------------------------------------------------------------------------
+# ECR Outputs
+# -----------------------------------------------------------------------------
+
+output "ecr_repository_names" {
+  description = "Names of the OrderFlow ECR repositories."
+  value       = module.ecr.repository_names
+}
+
+output "ecr_repository_urls" {
+  description = "URLs of the OrderFlow ECR repositories."
+  value       = module.ecr.repository_urls
+}
+
+output "ecr_repository_arns" {
+  description = "ARNs of the OrderFlow ECR repositories."
+  value       = module.ecr.repository_arns
 }
