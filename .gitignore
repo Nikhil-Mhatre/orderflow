@@ -176,6 +176,17 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
+# Terraform execution plans are environment-specific and must not be committed.
+tfplan
+*.tfplan
+
+# Local Terraform state lock file.
+.terraform.tfstate.lock.info
+
+# Terraform CLI configuration overrides.
+.terraformrc
+terraform.rc
+
 
 # ---------------------------------------------------------------------------
 # AWS / CDK / SAM local artifacts
