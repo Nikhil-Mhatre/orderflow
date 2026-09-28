@@ -1,3 +1,6 @@
+# -----------------------------------------------------------------------------
+# General
+# -----------------------------------------------------------------------------
 variable "aws_region" {
   description = "AWS region where the OrderFlow development environment is deployed."
   type        = string
@@ -16,6 +19,9 @@ variable "environment" {
   default     = "dev"
 }
 
+# -----------------------------------------------------------------------------
+# VPC
+# -----------------------------------------------------------------------------
 variable "vpc_cidr" {
   description = "CIDR block for the OrderFlow VPC."
   type        = string
@@ -38,4 +44,12 @@ variable "private_subnet_cidr" {
   description = "CIDR block for the private subnet."
   type        = string
   default     = "10.0.2.0/24"
+}
+
+# -----------------------------------------------------------------------------
+# IAM
+# -----------------------------------------------------------------------------
+variable "github_repository" {
+  description = "GitHub repository allowed to assume the GitHub Actions IAM role. Format: owner/repository."
+  type        = string
 }

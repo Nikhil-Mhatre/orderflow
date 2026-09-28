@@ -60,3 +60,22 @@ output "ecr_repository_arns" {
   description = "ARNs of the OrderFlow ECR repositories."
   value       = module.ecr.repository_arns
 }
+
+# -----------------------------------------------------------------------------
+# IAM Outputs
+# -----------------------------------------------------------------------------
+
+output "github_actions_role_arn" {
+  description = "ARN of the IAM role used by GitHub Actions."
+  value       = module.iam.github_actions_role_arn
+}
+
+output "github_actions_role_name" {
+  description = "Name of the IAM role used by GitHub Actions."
+  value       = module.iam.github_actions_role_name
+}
+
+output "github_oidc_provider_arn" {
+  description = "ARN of the GitHub Actions OIDC provider."
+  value       = module.iam.github_oidc_provider_arn
+}

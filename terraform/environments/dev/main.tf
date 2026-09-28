@@ -22,3 +22,13 @@ module "ecr" {
     "orderflow-worker"
   ]
 }
+
+
+module "iam" {
+  source = "../../modules/iam"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  github_repository = var.github_repository
+}
