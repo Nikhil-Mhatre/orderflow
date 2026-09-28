@@ -42,3 +42,23 @@ output "node_security_group_id" {
   description = "Security group ID attached to the EKS worker nodes."
   value       = aws_security_group.nodes.id
 }
+
+output "oidc_provider_arn" {
+  description = "ARN of the EKS OIDC identity provider."
+  value       = aws_iam_openid_connect_provider.eks.arn
+}
+
+output "oidc_provider_url" {
+  description = "URL of the EKS OIDC identity provider."
+  value       = aws_iam_openid_connect_provider.eks.url
+}
+
+output "load_balancer_controller_role_arn" {
+  description = "IAM role ARN used by the AWS Load Balancer Controller."
+  value       = aws_iam_role.load_balancer_controller.arn
+}
+
+output "load_balancer_controller_role_name" {
+  description = "IAM role name used by the AWS Load Balancer Controller."
+  value       = aws_iam_role.load_balancer_controller.name
+}

@@ -64,3 +64,21 @@ variable "node_max_size" {
   type        = number
   default     = 2
 }
+
+variable "load_balancer_controller_namespace" {
+  description = "Kubernetes namespace where the AWS Load Balancer Controller will run."
+  type        = string
+  default     = "kube-system"
+}
+
+variable "load_balancer_controller_service_account" {
+  description = "Kubernetes service account used by the AWS Load Balancer Controller."
+  type        = string
+  default     = "aws-load-balancer-controller"
+}
+
+variable "load_balancer_controller_version" {
+  description = "AWS Load Balancer Controller version."
+  type        = string
+  default     = "v2.14.1"
+}

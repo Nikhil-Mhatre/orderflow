@@ -157,3 +157,27 @@ output "eks_node_group_name" {
   description = "Name of the EKS managed node group."
   value       = module.eks.node_group_name
 }
+
+# -----------------------------------------------------------------------------
+# AWS Load Balancer Controller Outputs
+# -----------------------------------------------------------------------------
+
+output "eks_oidc_provider_arn" {
+  description = "ARN of the EKS OIDC identity provider."
+  value       = module.eks.oidc_provider_arn
+}
+
+output "eks_oidc_provider_url" {
+  description = "URL of the EKS OIDC identity provider."
+  value       = module.eks.oidc_provider_url
+}
+
+output "load_balancer_controller_role_arn" {
+  description = "IAM role ARN used by the AWS Load Balancer Controller."
+  value       = module.eks.load_balancer_controller_role_arn
+}
+
+output "load_balancer_controller_role_name" {
+  description = "IAM role name used by the AWS Load Balancer Controller."
+  value       = module.eks.load_balancer_controller_role_name
+}
