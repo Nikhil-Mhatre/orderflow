@@ -7,10 +7,13 @@ resource "aws_security_group" "database" {
   description = "Security group for the OrderFlow PostgreSQL database"
   vpc_id      = var.vpc_id
 
-  # PostgreSQL access will be restricted to the application/EKS security
-  # group once the EKS networking is implemented.
-  #
-  # We intentionally do not allow PostgreSQL access from 0.0.0.0/0.
+  ingress {
+    description     = "PostgreSQL access from EKS worker nodes"
+    protocol        = "tcp"
+    from_port       = 5432
+    to_port         = 5432
+    security_groups = [var.application_security_group_id]
+  }
 
   egress {
     description = "Allow outbound traffic"

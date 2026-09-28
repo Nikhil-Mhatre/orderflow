@@ -80,3 +80,48 @@ variable "database_username" {
   description = "Master username for the OrderFlow PostgreSQL database."
   type        = string
 }
+
+# -----------------------------------------------------------------------------
+# EKS
+# -----------------------------------------------------------------------------
+variable "kubernetes_version" {
+  description = "Kubernetes version for the EKS cluster."
+  type        = string
+}
+
+variable "eks_public_access_cidr" {
+  description = "Public IP CIDR allowed to access the EKS Kubernetes API."
+  type        = string
+
+  validation {
+    condition     = can(cidrhost(var.eks_public_access_cidr, 0))
+    error_message = "eks_public_access_cidr must be a valid CIDR block."
+  }
+}
+
+variable "node_instance_types" {
+  description = "EC2 instance types used by the EKS managed node group."
+  type        = list(string)
+
+  default = [
+    "t3.small"
+  ]
+}
+
+variable "node_desired_size" {
+  description = "Desired number of EKS worker nodes."
+  type        = number
+  default     = 1
+}
+
+variable "node_min_size" {
+  description = "Minimum number of EKS worker nodes."
+  type        = number
+  default     = 1
+}
+
+variable "node_max_size" {
+  description = "Maximum number of EKS worker nodes."
+  type        = number
+  default     = 2
+}

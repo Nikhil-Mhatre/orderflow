@@ -44,3 +44,8 @@ variable "allocated_storage" {
   type        = number
   default     = 20
 }
+
+variable "application_security_group_id" {
+  description = "Security group ID allowed to connect to PostgreSQL."
+  type        = string
+}

@@ -123,3 +123,37 @@ output "master_user_secret_arn" {
   description = "ARN of the Secrets Manager secret containing the RDS master credentials."
   value       = module.rds.master_user_secret_arn
 }
+
+# -----------------------------------------------------------------------------
+# EKS Outputs
+# -----------------------------------------------------------------------------
+
+output "eks_cluster_name" {
+  description = "Name of the EKS cluster."
+  value       = module.eks.cluster_name
+}
+
+output "eks_cluster_endpoint" {
+  description = "API server endpoint of the EKS cluster."
+  value       = module.eks.cluster_endpoint
+}
+
+output "eks_cluster_arn" {
+  description = "ARN of the EKS cluster."
+  value       = module.eks.cluster_arn
+}
+
+output "eks_cluster_security_group_id" {
+  description = "Security group ID of the EKS control plane."
+  value       = module.eks.cluster_security_group_id
+}
+
+output "eks_node_security_group_id" {
+  description = "Security group ID attached to the EKS worker nodes."
+  value       = module.eks.node_security_group_id
+}
+
+output "eks_node_group_name" {
+  description = "Name of the EKS managed node group."
+  value       = module.eks.node_group_name
+}
