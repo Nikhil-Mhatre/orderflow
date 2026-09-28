@@ -17,9 +17,9 @@ output "public_subnet_id" {
   value       = module.vpc.public_subnet_id
 }
 
-output "private_subnet_id" {
-  description = "ID of the private subnet."
-  value       = module.vpc.private_subnet_id
+output "private_subnet_ids" {
+  description = "IDs of the private subnets."
+  value       = module.vpc.private_subnet_ids
 }
 
 output "public_route_table_id" {
@@ -27,9 +27,9 @@ output "public_route_table_id" {
   value       = module.vpc.public_route_table_id
 }
 
-output "private_route_table_id" {
-  description = "ID of the private route table."
-  value       = module.vpc.private_route_table_id
+output "private_route_table_ids" {
+  description = "IDs of the private route tables."
+  value       = module.vpc.private_route_table_ids
 }
 
 output "nat_gateway_id" {
@@ -78,4 +78,48 @@ output "github_actions_role_name" {
 output "github_oidc_provider_arn" {
   description = "ARN of the GitHub Actions OIDC provider."
   value       = module.iam.github_oidc_provider_arn
+}
+
+# -----------------------------------------------------------------------------
+# RDS Outputs
+# -----------------------------------------------------------------------------
+
+output "db_instance_id" {
+  description = "Identifier of the PostgreSQL RDS instance."
+  value       = module.rds.db_instance_id
+}
+
+output "db_endpoint" {
+  description = "DNS endpoint of the PostgreSQL database."
+  value       = module.rds.db_endpoint
+}
+
+output "db_port" {
+  description = "Port used by the PostgreSQL database."
+  value       = module.rds.db_port
+}
+
+output "db_name" {
+  description = "Name of the PostgreSQL database."
+  value       = module.rds.db_name
+}
+
+output "db_username" {
+  description = "Master username of the PostgreSQL database."
+  value       = module.rds.db_username
+}
+
+output "db_security_group_id" {
+  description = "Security group ID attached to the PostgreSQL database."
+  value       = module.rds.db_security_group_id
+}
+
+output "db_subnet_group_name" {
+  description = "Name of the RDS DB subnet group."
+  value       = module.rds.db_subnet_group_name
+}
+
+output "master_user_secret_arn" {
+  description = "ARN of the Secrets Manager secret containing the RDS master credentials."
+  value       = module.rds.master_user_secret_arn
 }

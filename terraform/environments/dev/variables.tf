@@ -28,16 +28,30 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "availability_zone" {
-  description = "Availability Zone used by the development environment."
-  type        = string
-  default     = "us-east-1a"
+variable "availability_zones" {
+  description = "Availability Zones used by the development environment."
+  type        = list(string)
+
+  default = [
+    "us-east-1a",
+    "us-east-1b"
+  ]
 }
 
 variable "public_subnet_cidr" {
   description = "CIDR block for the public subnet."
   type        = string
   default     = "10.0.1.0/24"
+}
+
+variable "private_subnet_cidrs" {
+  description = "CIDR blocks for the private subnets."
+  type        = list(string)
+
+  default = [
+    "10.0.2.0/24",
+    "10.0.3.0/24"
+  ]
 }
 
 variable "private_subnet_cidr" {
@@ -51,5 +65,18 @@ variable "private_subnet_cidr" {
 # -----------------------------------------------------------------------------
 variable "github_repository" {
   description = "GitHub repository allowed to assume the GitHub Actions IAM role. Format: owner/repository."
+  type        = string
+}
+
+# -----------------------------------------------------------------------------
+# RDS
+# -----------------------------------------------------------------------------
+variable "database_name" {
+  description = "Name of the OrderFlow PostgreSQL database."
+  type        = string
+}
+
+variable "database_username" {
+  description = "Master username for the OrderFlow PostgreSQL database."
   type        = string
 }

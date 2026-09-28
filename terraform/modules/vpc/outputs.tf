@@ -13,9 +13,12 @@ output "public_subnet_id" {
   value       = aws_subnet.public.id
 }
 
-output "private_subnet_id" {
-  description = "ID of the private subnet."
-  value       = aws_subnet.private.id
+output "private_subnet_ids" {
+  description = "IDs of the private subnets."
+  value = [
+    for subnet in aws_subnet.private :
+    subnet.id
+  ]
 }
 
 output "public_route_table_id" {
@@ -23,9 +26,12 @@ output "public_route_table_id" {
   value       = aws_route_table.public.id
 }
 
-output "private_route_table_id" {
-  description = "ID of the private route table."
-  value       = aws_route_table.private.id
+output "private_route_table_ids" {
+  description = "IDs of the private route tables."
+  value = [
+    for route_table in aws_route_table.private :
+    route_table.id
+  ]
 }
 
 output "nat_gateway_id" {

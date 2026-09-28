@@ -31,7 +31,7 @@ resource "aws_internet_gateway" "this" {
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.this.id
   cidr_block              = var.public_subnet_cidr
-  availability_zone       = var.availability_zone
+  availability_zone       = var.availability_zones[0]
   map_public_ip_on_launch = true
 
   tags = {
@@ -44,12 +44,17 @@ resource "aws_subnet" "public" {
 # -----------------------------------------------------------------------------
 
 resource "aws_subnet" "private" {
+  for_each = {
+    for index, cidr in var.private_subnet_cidrs :
+    index => cidr
+  }
+
   vpc_id            = aws_vpc.this.id
-  cidr_block        = var.private_subnet_cidr
-  availability_zone = var.availability_zone
+  cidr_block        = each.value
+  availability_zone = var.availability_zones[each.key]
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-private-subnet"
+    Name = "${var.project_name}-${var.environment}-private-subnet-${each.key + 1}"
   }
 }
 
@@ -106,23 +111,30 @@ resource "aws_nat_gateway" "this" {
 # -----------------------------------------------------------------------------
 
 resource "aws_route_table" "private" {
+  for_each = aws_subnet.private
+
   vpc_id = aws_vpc.this.id
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-private-rt"
+    Name = "${var.project_name}-${var.environment}-private-rt-${each.key + 1}"
   }
 }
 
 resource "aws_route" "private_nat" {
-  route_table_id         = aws_route_table.private.id
+  for_each = aws_route_table.private
+
+  route_table_id         = each.value.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.this.id
 }
 
 resource "aws_route_table_association" "private" {
-  subnet_id      = aws_subnet.private.id
-  route_table_id = aws_route_table.private.id
+  for_each = aws_subnet.private
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private[each.key].id
 }
+
 
 # -----------------------------------------------------------------------------
 # Security Group - VPC Endpoints
@@ -164,7 +176,8 @@ resource "aws_vpc_endpoint" "s3" {
   vpc_endpoint_type = "Gateway"
 
   route_table_ids = [
-    aws_route_table.private.id
+    for route_table in aws_route_table.private :
+    route_table.id
   ]
 
   tags = {
@@ -182,7 +195,8 @@ resource "aws_vpc_endpoint" "ecr_api" {
   vpc_endpoint_type = "Interface"
 
   subnet_ids = [
-    aws_subnet.private.id
+    for subnet in aws_subnet.private :
+    subnet.id
   ]
 
   security_group_ids = [
@@ -206,7 +220,8 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   vpc_endpoint_type = "Interface"
 
   subnet_ids = [
-    aws_subnet.private.id
+    for subnet in aws_subnet.private :
+    subnet.id
   ]
 
   security_group_ids = [
