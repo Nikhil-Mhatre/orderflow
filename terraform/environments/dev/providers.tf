@@ -1,8 +1,9 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-state-690532463350"
-    key    = "orderflow/dev/terraform.tfstate"
-    region = "us-east-1"
+    bucket  = "terraform-state-690532463350"
+    key     = "orderflow/dev/terraform.tfstate"
+    region  = "us-east-1"
+    profile = "default"
 
     encrypt      = true
     use_lockfile = true
@@ -15,7 +16,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project     = "OrderFlow"
-      Environment = "dev"
+      Environment = "prod"
       ManagedBy   = "Terraform"
     }
   }
