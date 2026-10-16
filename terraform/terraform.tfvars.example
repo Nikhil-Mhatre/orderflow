@@ -1,0 +1,8 @@
+aws_region = "us-east-1"
+project_name = "orderflow"
+environment = "dev"
+cluster_version = "1.33"
+public_access_cidrs = ["YOUR_PUBLIC_IP/32"]
+github_owner = "YOUR_GITHUB_OWNER"
+github_source_repo = "order-flow"
+db_backup_retention_days = 1
