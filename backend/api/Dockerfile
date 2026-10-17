@@ -10,6 +10,9 @@ RUN corepack enable
 
 WORKDIR /workspace
 
+# Copy Certificate for RDS
+COPY certs/global-bundle.pem /app/certs/global-bundle.pem
+
 # Root workspace configuration required by pnpm and TypeScript.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 

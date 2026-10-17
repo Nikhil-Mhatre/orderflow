@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-
+import { readFileSync } from "node:fs";
 import { env } from "../config/env.js";
 
 // -----------------------------------------------------------------------------
@@ -14,6 +14,11 @@ import { env } from "../config/env.js";
 // The repository layer uses this pool for database operations.
 export const pool = new Pool({
   connectionString: env.database.url,
+
+  ssl: {
+    ca: readFileSync("/app/certs/global-bundle.pem", "utf8"),
+    rejectUnauthorized: true,
+  },
 
   // Maximum number of PostgreSQL connections this worker instance may hold.
   max: 10,

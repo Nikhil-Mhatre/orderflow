@@ -2,7 +2,7 @@
 
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-
+import { readFileSync } from "node:fs";
 import { env } from "../config/env.js";
 import * as schema from "./schema/index.js";
 
@@ -24,8 +24,9 @@ export const pool = new Pool({
   // Maximum number of PostgreSQL connections this service instance may hold.
   max: 10,
 
-  // enable encryption
+  // enable encryption with CA Certification
   ssl: {
+    ca: readFileSync("/app/certs/global-bundle.pem", "utf8"),
     rejectUnauthorized: true,
   },
   // Close idle connections after 30 seconds.
