@@ -1,8 +1,9 @@
-import { db } from "../client.js";
+import { db, pool } from "../client.js";
 import { products } from "../schema/products.js";
 
 const seedProducts = [
   {
+    slug: "macbook-pro-14-inch",
     name: "MacBook Pro 14-inch",
     description: "Apple MacBook Pro with a 14-inch Liquid Retina XDR display.",
     price: 199900,
@@ -10,6 +11,7 @@ const seedProducts = [
     active: true,
   },
   {
+    slug: "sony-wh-1000xm6",
     name: "Sony WH-1000XM6",
     description:
       "Wireless noise-cancelling headphones with premium sound quality.",
@@ -18,6 +20,7 @@ const seedProducts = [
     active: true,
   },
   {
+    slug: "iphone-17-pro",
     name: "iPhone 17 Pro",
     description:
       "Apple iPhone Pro with advanced camera and performance features.",
@@ -26,6 +29,7 @@ const seedProducts = [
     active: true,
   },
   {
+    slug: "apple-watch-series-11",
     name: "Apple Watch Series 11",
     description:
       "Advanced smartwatch with health, fitness, and connectivity features.",
@@ -34,6 +38,7 @@ const seedProducts = [
     active: true,
   },
   {
+    slug: "ipad-pro",
     name: "iPad Pro",
     description:
       "Professional tablet with a high-resolution display and powerful performance.",
@@ -46,16 +51,21 @@ const seedProducts = [
 async function seed() {
   console.log("Seeding products...");
 
-  await db.insert(products).values(seedProducts);
+  for (const product of seedProducts) {
+    await db
+      .insert(products)
+      .values(product)
+      .onConflictDoNothing({ target: products.slug });
+  }
 
-  console.log(`Inserted ${seedProducts.length} products.`);
+  console.log(`Processed ${seedProducts.length} products.`);
 }
 
 seed()
   .catch((error) => {
     console.error("Product seeding failed:", error);
-    process.exit(1);
+    process.exitCode = 1;
   })
   .finally(async () => {
-    // Add db cleanup here if your database client exposes a close/end method.
+    await pool.end();
   });

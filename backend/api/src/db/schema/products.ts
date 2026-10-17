@@ -15,6 +15,8 @@ export const products = pgTable("products", {
    */
   id: uuid("id").defaultRandom().primaryKey(),
 
+  slug: text("slug").notNull().unique(),
+
   /**
    * Product name displayed to customers.
    */
