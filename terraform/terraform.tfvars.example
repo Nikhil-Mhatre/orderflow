@@ -1,8 +1,15 @@
-aws_region = "us-east-1"
-project_name = "orderflow"
-environment = "dev"
-cluster_version = "1.33"
-public_access_cidrs = ["YOUR_PUBLIC_IP/32"]
-github_owner = "YOUR_GITHUB_OWNER"
-github_source_repo = "order-flow"
-db_backup_retention_days = 1
+aws_region   = "ap-south-1"
+project_name = "order-flow"
+environment  = "dev"
+
+# Required: set these to your actual GitHub owner and repository.
+github_org  = "YOUR_GITHUB_ORG_OR_USERNAME"
+github_repo = "order-flow"
+
+# Restrict this to your trusted public IP/CIDR before applying.
+# Example: ["203.0.113.10/32"]
+eks_public_access_cidrs = ["0.0.0.0/0"]
+
+# Dev defaults are cost-conscious, not production HA.
+single_nat_gateway = true
+db_multi_az        = false

@@ -24,6 +24,10 @@ export const pool = new Pool({
   // Maximum number of PostgreSQL connections this service instance may hold.
   max: 10,
 
+  // enable encryption
+  ssl: {
+    rejectUnauthorized: true,
+  },
   // Close idle connections after 30 seconds.
   idleTimeoutMillis: 30_000,
 
