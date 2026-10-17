@@ -1,76 +1,40 @@
-# syntax=docker/dockerfile:1
 
-# =============================================================================
-# Build stage
-# =============================================================================
-
-FROM node:24-bookworm-slim AS builder
-
-RUN corepack enable
-
-WORKDIR /workspace
-
-# Copy Certificate for RDS
-COPY certs/global-bundle.pem /app/certs/global-bundle.pem
-
-# Root workspace configuration required by pnpm and TypeScript.
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-
-# Workspace package manifests required by order-api.
-COPY apps/order-api/package.json apps/order-api/package.json
-COPY packages/contracts/package.json packages/contracts/package.json
-COPY packages/eslint-config/package.json packages/eslint-config/package.json
-COPY packages/typescript-config/package.json packages/typescript-config/package.json
-
-# Install the complete workspace dependency graph.
-RUN pnpm install --frozen-lockfile
-
-# Copy application source and required workspace packages.
-COPY apps/order-api apps/order-api
-COPY packages/contracts packages/contracts
-COPY packages/eslint-config packages/eslint-config
-COPY packages/typescript-config packages/typescript-config
-
-# Build the Order API.
-RUN pnpm --filter @orderflow/order-api build
-
-# Generate a self-contained production dependency tree.
-RUN pnpm deploy \
-    --filter @orderflow/order-api \
-    --prod \
-    /tmp/order-api
-
-
-# =============================================================================
-# Production runtime
-# =============================================================================
-#
-# Distroless intentionally contains no shell, package manager, or standard
-# Linux command-line utilities.
-#
-# The "nonroot" variant runs the application without root privileges.
-#
-# This is intentionally a completely different runtime environment from the
-# development image.
-FROM gcr.io/distroless/nodejs24-debian13:nonroot AS production
+# ---------- Build stage ----------
+FROM node:22-bookworm-slim AS build
 
 WORKDIR /app
 
-# Copy only production dependencies.
-COPY --from=builder --chown=nonroot:nonroot \
-    /tmp/order-api/node_modules \
-    ./node_modules
+RUN corepack enable
 
-# Copy runtime package metadata.
-COPY --from=builder --chown=nonroot:nonroot \
-    /tmp/order-api/package.json \
-    ./package.json
+# Install dependencies using the lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
 
-# Copy only compiled application code.
-COPY --from=builder --chown=nonroot:nonroot \
-    /workspace/apps/order-api/dist \
-    ./dist
+# Copy source and compile TypeScript
+COPY . .
+RUN pnpm build
 
-EXPOSE 3001
+# Keep only production dependencies
+RUN pnpm prune --prod
 
+
+# ---------- Production stage ----------
+FROM gcr.io/distroless/nodejs22-debian12:nonroot AS production
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Production dependencies and compiled application
+COPY --from=build --chown=nonroot:nonroot /app/node_modules ./node_modules
+COPY --from=build --chown=nonroot:nonroot /app/package.json ./package.json
+COPY --from=build --chown=nonroot:nonroot /app/dist ./dist
+
+# AWS RDS CA bundle for verified TLS connections
+COPY --chown=nonroot:nonroot certs/global-bundle.pem /app/certs/global-bundle.pem
+
+EXPOSE 3000
+
+# Distroless Node.js images already use Node as their entrypoint.
 CMD ["dist/server.js"]

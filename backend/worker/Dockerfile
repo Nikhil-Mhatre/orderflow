@@ -1,74 +1,43 @@
-# syntax=docker/dockerfile:1
 
-# =============================================================================
-# Build stage
-# =============================================================================
-
-FROM node:24-bookworm-slim AS builder
-
-RUN corepack enable
-
-WORKDIR /workspace
-
-# Root workspace configuration required by pnpm and TypeScript.
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-
-# Workspace package manifests required by order-worker.
-COPY apps/order-worker/package.json apps/order-worker/package.json
-COPY packages/contracts/package.json packages/contracts/package.json
-COPY packages/eslint-config/package.json packages/eslint-config/package.json
-COPY packages/typescript-config/package.json packages/typescript-config/package.json
-
-# Install the complete workspace dependency graph.
-RUN pnpm install --frozen-lockfile
-
-# Copy application source and required workspace packages.
-COPY apps/order-worker apps/order-worker
-COPY packages/contracts packages/contracts
-COPY packages/eslint-config packages/eslint-config
-COPY packages/typescript-config packages/typescript-config
-
-# Build the Order Worker.
-RUN pnpm --filter @orderflow/order-worker build
-
-# Generate a self-contained production dependency tree.
-RUN pnpm deploy \
-    --filter @orderflow/order-worker \
-    --prod \
-    /tmp/order-worker
-
-
-# =============================================================================
-# Production runtime
-# =============================================================================
-#
-# Distroless intentionally contains no shell, package manager, or standard
-# Linux command-line utilities.
-#
-# The "nonroot" variant runs the application without root privileges.
-#
-# This is intentionally a completely different runtime environment from the
-# development image.
-FROM gcr.io/distroless/nodejs24-debian13:nonroot AS production
+# ---------- Build stage ----------
+FROM node:22-bookworm-slim AS build
 
 WORKDIR /app
 
-# Copy only production dependencies.
-COPY --from=builder --chown=nonroot:nonroot \
-    /tmp/order-worker/node_modules \
-    ./node_modules
+RUN corepack enable
 
-# Copy runtime package metadata.
-COPY --from=builder --chown=nonroot:nonroot \
-    /tmp/order-worker/package.json \
-    ./package.json
+# Copy dependency manifests
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Copy only compiled application code.
-COPY --from=builder --chown=nonroot:nonroot \
-    /workspace/apps/order-worker/dist \
-    ./dist
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
-# The worker does not expose an HTTP port.
-# It consumes messages from SQS in the background.
+# Copy worker source
+COPY . .
 
+# Compile TypeScript
+RUN pnpm build
+
+# Remove development dependencies
+RUN pnpm prune --prod
+
+
+# ---------- Production stage ----------
+FROM gcr.io/distroless/nodejs22-debian12:nonroot AS production
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Production dependencies
+COPY --from=build --chown=nonroot:nonroot /app/node_modules ./node_modules
+COPY --from=build --chown=nonroot:nonroot /app/package.json ./package.json
+
+# Compiled worker
+COPY --from=build --chown=nonroot:nonroot /app/dist ./dist
+
+# AWS RDS CA bundle for verified PostgreSQL TLS
+COPY --chown=nonroot:nonroot certs/global-bundle.pem /app/certs/global-bundle.pem
+
+# Distroless Node.js image runs Node directly as non-root
 CMD ["dist/index.js"]
