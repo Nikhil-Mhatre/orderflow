@@ -61,6 +61,19 @@ jobs:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Inspect GitHub OIDC token claims
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken("sts.amazonaws.com");
+            const payload = JSON.parse(
+              Buffer.from(token.split(".")[1], "base64url").toString()
+            );
+
+            console.log("OIDC issuer:", payload.iss);
+            console.log("OIDC audience:", payload.aud);
+            console.log("OIDC subject:", payload.sub);
+
       - name: Login to Amazon ECR
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
