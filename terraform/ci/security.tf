@@ -16,9 +16,11 @@ data "aws_iam_policy_document" "github_assume_role" {
     }
 
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_org}/${var.github_repo}:ref:refs/heads/${var.github_deploy_branch}"]
+      values = [
+        "repo:Nikhil-Mhatre@0144405614/orderflow@01383172290:ref:refs/heads/main"
+      ]
     }
   }
 }
