@@ -1,0 +1,97 @@
+name: API CI
+
+on:
+  pull_request:
+    paths:
+      - "backend/api/**"
+      - ".github/workflows/api-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/api/**"
+      - ".github/workflows/api-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-api:
+    name: Validate API and database migrations
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: orderflow_test
+          POSTGRES_USER: orderflow
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U orderflow -d orderflow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: backend/api
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://orderflow:ci-only-password@localhost:5432/orderflow_test
+      EVENTBRIDGE_SOURCE: com.orderflow.api
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up pnpm
+        run: |
+          npm install --global corepack
+          corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Apply committed migrations
+        run: pnpm db:migrate
+
+      - name: Verify products table exists
+        run: |
+          node --input-type=module -e '
+            import pg from "pg";
+            const client = new pg.Client({
+              connectionString: process.env.DATABASE_URL
+            });
+            await client.connect();
+            try {
+              const result = await client.query(
+                "SELECT to_regclass('\''public.products'\'') AS table_name"
+              );
+              if (!result.rows[0].table_name) {
+                throw new Error("Migration did not create public.products");
+              }
+              console.log("Migration verification passed");
+            } finally {
+              await client.end();
+            }
+          '
