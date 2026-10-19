@@ -21,6 +21,7 @@ node_modules/
 !.env.*.example
 
 # Local credentials
+!global-bundle.pem
 *.pem
 *.key
 *.p12
