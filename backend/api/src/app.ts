@@ -10,7 +10,7 @@ import { productRouter } from "./modules/products/product.route.js";
 import cors from "cors";
 import { env } from "./config/env.js";
 
-// Testing
+// Testing 1
 
 /**
  * Creates and configures the Express application.
