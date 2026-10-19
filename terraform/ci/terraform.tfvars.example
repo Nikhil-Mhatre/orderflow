@@ -1,0 +1,6 @@
+aws_region          = "us-east-1"
+project_name        = "orderflow"
+github_org          = "YOUR_GITHUB_ORG_OR_USERNAME"
+github_repo         = "orderflow"
+github_deploy_branch = "main"
+
