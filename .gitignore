@@ -21,8 +21,9 @@ node_modules/
 !.env.*.example
 
 # Local credentials
-!global-bundle.pem
+# Ignore all pem files
 *.pem
+!global-bundle.pem
 *.key
 *.p12
 *.pfx
@@ -240,7 +241,6 @@ localstack-data/
 
 # misc
 .DS_Store
-*.pem
 
 # debug
 npm-debug.log*
