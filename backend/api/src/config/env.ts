@@ -26,6 +26,8 @@ const envSchema = z.object({
   // PostgreSQL connection string used by the Order API.
   DATABASE_URL: z.url(),
 
+  DB_CA_CERT_PATH: z.string().optional(),
+
   // AWS region used by AWS SDK clients.
   AWS_REGION: z.string().trim().min(1).default("ap-south-1"),
   FRONTEND_URL: z.string().trim().min(1).default("http://localhost:3000"),
@@ -80,6 +82,7 @@ export const env = {
 
   database: {
     url: values.DATABASE_URL,
+    caCertPath: values.DB_CA_CERT_PATH,
   },
 
   aws: {

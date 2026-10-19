@@ -6,6 +6,8 @@ import { readFileSync } from "node:fs";
 import { env } from "../config/env.js";
 import * as schema from "./schema/index.js";
 
+const caPath = env.database.caCertPath;
+
 // -----------------------------------------------------------------------------
 // PostgreSQL connection pool
 // -----------------------------------------------------------------------------
@@ -25,10 +27,15 @@ export const pool = new Pool({
   max: 10,
 
   // enable encryption with CA Certification
-  ssl: {
-    ca: readFileSync("/app/certs/global-bundle.pem", "utf8"),
-    rejectUnauthorized: true,
-  },
+  ssl:
+    env.nodeEnv === "production"
+      ? {
+          ca: env.database.caCertPath
+            ? readFileSync(env.database.caCertPath, "utf8")
+            : undefined,
+          rejectUnauthorized: true,
+        }
+      : false,
   // Close idle connections after 30 seconds.
   idleTimeoutMillis: 30_000,
 
