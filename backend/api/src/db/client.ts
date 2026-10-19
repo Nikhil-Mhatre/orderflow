@@ -6,8 +6,6 @@ import { readFileSync } from "node:fs";
 import { env } from "../config/env.js";
 import * as schema from "./schema/index.js";
 
-const caPath = env.database.caCertPath;
-
 // -----------------------------------------------------------------------------
 // PostgreSQL connection pool
 // -----------------------------------------------------------------------------
