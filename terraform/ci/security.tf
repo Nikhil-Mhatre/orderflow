@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "github_assume_role" {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:Nikhil-Mhatre@0144405614/orderflow@01383172290:ref:refs/heads/main"
+        "repo:Nikhil-Mhatre@144405614/orderflow@1383172290:ref:refs/heads/main"
       ]
     }
   }
