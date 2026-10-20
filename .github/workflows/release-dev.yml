@@ -1,0 +1,151 @@
+name: OrderFlow Release - Dev
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full 40-character commit SHA on main
+        required: true
+        type: string
+      approve_database_migration:
+        description: Confirm applying committed migrations to dev RDS
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: orderflow-dev-release
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.out.outputs.sha }}
+    steps:
+      - name: Validate input
+        env:
+          SHA: ${{ inputs.release_sha }}
+          APPROVE: ${{ inputs.approve_database_migration }}
+        run: |
+          set -euo pipefail
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$APPROVE" == "true" ]] || { echo "Migration confirmation required"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_sha }}
+          fetch-depth: 0
+      - name: Verify SHA is on main
+        env:
+          SHA: ${{ inputs.release_sha }}
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor "$SHA" origin/main
+      - id: out
+        env:
+          SHA: ${{ inputs.release_sha }}
+        run: echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+  migrate:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: dev-release
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ECR_PREFIX: ${{ vars.ECR_REPOSITORY_PREFIX }}
+      RELEASE_SHA: ${{ needs.verify.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.RELEASE_AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Verify migration image exists
+        run: |
+          aws ecr describe-images --repository-name "${ECR_PREFIX}/migration" --image-ids imageTag="${RELEASE_SHA}" >/dev/null
+      - name: Run migration Job
+        env:
+          CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
+          NAMESPACE: order-flow
+        run: |
+          set -euo pipefail
+          aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION"
+          JOB="orderflow-migrate-${RELEASE_SHA:0:12}"
+          if kubectl get job "$JOB" -n "$NAMESPACE" >/dev/null 2>&1; then
+            SUCCESS="$(kubectl get job "$JOB" -n "$NAMESPACE" -o jsonpath='{.status.succeeded}')"
+            [[ "$SUCCESS" == "1" ]] && exit 0
+            echo "Existing migration Job is not successful; inspect before retrying."
+            kubectl describe job "$JOB" -n "$NAMESPACE" || true
+            kubectl logs "job/$JOB" -n "$NAMESPACE" || true
+            exit 1
+          fi
+          cat > /tmp/job.yaml <<EOF
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: ${JOB}
+            namespace: ${NAMESPACE}
+          spec:
+            backoffLimit: 0
+            activeDeadlineSeconds: 600
+            ttlSecondsAfterFinished: 86400
+            template:
+              spec:
+                restartPolicy: Never
+                containers:
+                  - name: migrate
+                    image: ${{ steps.ecr.outputs.registry }}/${ECR_PREFIX}/migration:${RELEASE_SHA}
+                    imagePullPolicy: IfNotPresent
+                    args: ["migrate"]
+                    env:
+                      - name: DATABASE_URL
+                        valueFrom:
+                          secretKeyRef:
+                            name: order-flow-secrets
+                            key: DATABASE_URL
+                      - name: NODE_ENV
+                        value: production
+          EOF
+          kubectl apply -f /tmp/job.yaml
+          kubectl wait --for=condition=complete "job/$JOB" -n "$NAMESPACE" --timeout=10m || {
+            kubectl describe job "$JOB" -n "$NAMESPACE" || true
+            kubectl logs "job/$JOB" -n "$NAMESPACE" || true
+            exit 1
+          }
+  promote-gitops:
+    needs: [verify, migrate]
+    runs-on: ubuntu-latest
+    environment: dev-release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.GITOPS_REPOSITORY }}
+          ref: ${{ vars.GITOPS_BRANCH }}
+          token: ${{ secrets.GITOPS_WRITE_TOKEN }}
+          path: gitops
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+      - name: Promote exact SHA
+        working-directory: gitops
+        env:
+          SHA: ${{ needs.verify.outputs.sha }}
+        run: |
+          set -euo pipefail
+          FILE=apps/order-flow/overlays/dev/kustomization.yaml
+          test -f "$FILE"
+          # Adjust image names to match the real overlay before enabling this workflow.
+          for image in api worker frontend; do
+            yq -e ".images[] | select(.name == \"$image\")" "$FILE" >/dev/null
+            yq -i "(.images[] | select(.name == \"$image\").newTag) = \"$SHA\"" "$FILE"
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$FILE"
+          if git diff --cached --quiet; then echo "Already promoted"; exit 0; fi
+          git commit -m "release(dev): promote OrderFlow $SHA"
+          git push origin "${{ vars.GITOPS_BRANCH }}"

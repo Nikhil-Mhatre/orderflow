@@ -1,29 +1,18 @@
 name: API CI
-
 on:
   pull_request:
-    paths:
-      - "backend/api/**"
-      - ".github/workflows/api-ci.yml"
+    paths: ["backend/api/**", ".github/workflows/api-ci.yml"]
   push:
-    branches:
-      - main
-    paths:
-      - "backend/api/**"
-      - ".github/workflows/api-ci.yml"
-
+    branches: [main]
+    paths: ["backend/api/**", ".github/workflows/api-ci.yml"]
 permissions:
   contents: read
-
 concurrency:
   group: api-ci-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   validate-api:
-    name: Validate API and database migrations
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:16
@@ -31,67 +20,58 @@ jobs:
           POSTGRES_DB: orderflow_test
           POSTGRES_USER: orderflow
           POSTGRES_PASSWORD: ci-only-password
-        ports:
-          - 5432:5432
+        ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U orderflow -d orderflow_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
+          --health-interval 5s --health-timeout 5s --health-retries 10
     defaults:
       run:
         working-directory: backend/api
-
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://orderflow:ci-only-password@localhost:5432/orderflow_test
       EVENTBRIDGE_SOURCE: com.orderflow.api
       AWS_REGION: us-east-1
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
-          node-version: 22
-
-      - name: Set up pnpm
+          version: 10
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - name: Validate Drizzle journal references
+        shell: bash
         run: |
-          npm install --global corepack
-          corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Run tests
-        run: pnpm test
-
-      - name: Apply committed migrations
+          set -euo pipefail
+          test -f src/db/migrations/meta/_journal.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const dir = 'src/db/migrations';
+          const journal = JSON.parse(fs.readFileSync(`${dir}/meta/_journal.json`, 'utf8'));
+          if (!Array.isArray(journal.entries)) throw new Error('Invalid Drizzle journal');
+          for (const entry of journal.entries) {
+            if (!fs.existsSync(`${dir}/${entry.tag}.sql`)) throw new Error(`Missing ${entry.tag}.sql`);
+          }
+          console.log(`Validated ${journal.entries.length} migration entries`);
+          NODE
+      - name: Apply migrations to clean PostgreSQL
         run: pnpm db:migrate
-
-      - name: Verify products table exists
+      - name: Verify schema
         run: |
-          node --input-type=module -e '
-            import pg from "pg";
-            const client = new pg.Client({
-              connectionString: process.env.DATABASE_URL
-            });
-            await client.connect();
-            try {
-              const result = await client.query(
-                "SELECT to_regclass('\''public.products'\'') AS table_name"
-              );
-              if (!result.rows[0].table_name) {
-                throw new Error("Migration did not create public.products");
-              }
-              console.log("Migration verification passed");
-            } finally {
-              await client.end();
-            }
-          '
+          node --input-type=module <<'NODE'
+          import pg from 'pg';
+          const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+          await client.connect();
+          try {
+            const result = await client.query("SELECT to_regclass('public.products') AS products");
+            if (!result.rows[0].products) throw new Error('public.products missing after migrations');
+          } finally { await client.end(); }
+          NODE
