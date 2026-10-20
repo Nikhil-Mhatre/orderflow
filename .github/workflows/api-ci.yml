@@ -14,7 +14,6 @@ jobs:
   validate-api:
     runs-on: ubuntu-latest
     services:
-      name: Set up container with Postgres
       postgres:
         image: postgres:16
         env:
