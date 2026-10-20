@@ -17,10 +17,12 @@ jobs:
       worker: ${{ steps.filter.outputs.worker }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Clone Github Repo
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: dorny/paths-filter@v3
+      - name: Check Microservices Modification
+        uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
@@ -41,15 +43,20 @@ jobs:
       AWS_REGION: ${{ vars.AWS_REGION }}
       ECR_PREFIX: ${{ vars.ECR_REPOSITORY_PREFIX }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Clone Github Repo
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
       - id: ecr
+        name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v2
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - name: Login to AWS ECR
+        uses: docker/setup-buildx-action@v3
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
         with:
           context: ./backend/api
           file: ./backend/api/Dockerfile
@@ -63,17 +70,22 @@ jobs:
       AWS_REGION: ${{ vars.AWS_REGION }}
       ECR_PREFIX: ${{ vars.ECR_REPOSITORY_PREFIX }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Clone Github Repo
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
       - id: ecr
+        name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v2
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - name: Login to AWS ECR
+        uses: docker/setup-buildx-action@v3
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
         with:
-          context: ./backend/worker
+          context: ./worker/api
           file: ./backend/worker/Dockerfile
           push: true
           tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}/worker:${{ github.sha }}
@@ -85,15 +97,20 @@ jobs:
       AWS_REGION: ${{ vars.AWS_REGION }}
       ECR_PREFIX: ${{ vars.ECR_REPOSITORY_PREFIX }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Clone Github Repo
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
       - id: ecr
+        name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v2
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - name: Login to AWS ECR
+        uses: docker/setup-buildx-action@v3
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
