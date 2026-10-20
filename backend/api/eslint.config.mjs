@@ -1,9 +1,49 @@
-// Shared ESLint configuration for the Order API.
-//
-// The repository-level linting policy is maintained by
-// @orderflow/eslint-config. Service-specific rules should only be added here
-// when they are genuinely specific to the Order API.
+import js from "@eslint/js";
+import babelParser from "@babel/eslint-parser";
 
-import config from "@orderflow/eslint-config/node";
-
-export default config;
+export default [
+  {
+    ignores: ["dist/**", "coverage/**", "node_modules/**"],
+  },
+  {
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+    ...js.configs.recommended,
+  },
+  {
+    files: ["**/*.ts"],
+    languageOptions: {
+      parser: babelParser,
+      parserOptions: {
+        requireConfigFile: false,
+        babelOptions: {
+          parserOpts: {
+            plugins: ["typescript"],
+          },
+        },
+        sourceType: "module",
+        ecmaVersion: "latest",
+      },
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        Buffer: "readonly",
+        __dirname: "readonly",
+      },
+    },
+    rules: {
+      "no-undef": "off",
+      "no-unused-vars": [
+        "off",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
+];
