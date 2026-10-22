@@ -1,0 +1,39 @@
+
+aws_region   = "ap-south-1"
+project_name = "order-flow"
+environment  = "dev"
+
+vpc_cidr = "10.40.0.0/16"
+
+# Empty means Terraform selects the first two available AZs.
+availability_zones = []
+
+public_subnet_cidrs = [
+  "10.40.101.0/24",
+  "10.40.102.0/24"
+]
+
+private_subnet_cidrs = [
+  "10.40.1.0/24",
+  "10.40.2.0/24"
+]
+
+# Keep false for low-cost initial testing.
+enable_nat_gateway = false
+single_nat_gateway = true
+
+ecr_repository_names = [
+  "frontend",
+  "api",
+  "worker"
+]
+
+ecr_image_tag_mutability = "IMMUTABLE"
+ecr_scan_on_push         = true
+ecr_max_image_count      = 30
+
+tags = {
+  Project     = "order-flow"
+  Environment = "dev"
+  ManagedBy   = "Terraform"
+}
