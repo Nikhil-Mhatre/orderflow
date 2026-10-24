@@ -19,6 +19,7 @@ locals {
     {
       Project     = var.project_name
       Environment = var.environment
+      Region      = var.aws_region
     },
     var.tags
   )

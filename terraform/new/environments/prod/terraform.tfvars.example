@@ -1,6 +1,6 @@
 
 aws_region   = "us-east-1"
-project_name = "order-flow"
+project_name = "orderflow"
 environment  = "dev"
 
 vpc_cidr = "10.40.0.0/16"
@@ -28,12 +28,11 @@ ecr_repository_names = [
   "worker"
 ]
 
-ecr_image_tag_mutability = "IMMUTABLE"
-ecr_scan_on_push         = true
-ecr_max_image_count      = 30
+ecr_max_image_count = 30
+
+subject_claim_prefix = <GET_IT_FROM_GITHUB_REPO_SETTINGS>
+github_deploy_branch = "main"
 
 tags = {
-  Project     = "order-flow"
-  Environment = "dev"
   ManagedBy   = "Terraform"
 }

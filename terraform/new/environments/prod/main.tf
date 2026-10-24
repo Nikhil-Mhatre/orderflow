@@ -6,7 +6,7 @@ module "vpc" {
 
   vpc_cidr = var.vpc_cidr
 
-  availability_zones   = var.availability_zones
+  availability_zones   = local.availability_zones
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
 
@@ -46,6 +46,29 @@ module "github_oidc" {
   subject_claim_prefix = var.subject_claim_prefix
   github_deploy_branch = var.github_deploy_branch
   ecr_repository_arns  = values(module.ecr.repository_arns)
+
+  common_tags = local.common_tags
+}
+
+
+module "rds" {
+  source = "../../modules/rds"
+
+  prefix = "${var.project_name}-rds"
+
+  # Network configuration from the existing modules.
+  vpc_id                = module.vpc.vpc_id
+  private_subnet_ids    = module.vpc.private_subnet_ids
+  eks_security_group_id = module.eks.cluster_primary_security_group_id
+
+  # Database configuration from root variables.
+  db_name     = var.project_name
+  db_username = var.project_name
+
+
+  # Keep disabled for disposable development infrastructure;
+  # enable for environments where accidental deletion must be prevented.
+  db_deletion_protection = false
 
   common_tags = local.common_tags
 }

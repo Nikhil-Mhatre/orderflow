@@ -14,3 +14,8 @@ output "eks_cluster_arn" {
   description = "ARN of the EKS cluster used by the deployment workflow."
   value       = module.eks.cluster_arn
 }
+
+output "cluster_primary_security_group_id" {
+  description = "Security group ID permitted to communicate with other services."
+  value       = module.eks.cluster_primary_security_group_id
+}
