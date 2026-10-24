@@ -5,7 +5,7 @@ module "vpc" {
   version = "6.7.3"
 
   # Set the VPC name and its overall private IP address range.
-  name = var.name
+  name = var.prefix
   cidr = var.vpc_cidr
 
   # Define the Availability Zones and subnet CIDR ranges.
@@ -28,8 +28,8 @@ module "vpc" {
   public_subnet_tags = merge(
     var.common_tags,
     {
-      "kubernetes.io/role/elb"            = "1"
-      "kubernetes.io/cluster/${var.name}" = "shared"
+      "kubernetes.io/role/elb"              = "1"
+      "kubernetes.io/cluster/${var.prefix}" = "shared"
     }
   )
 
@@ -38,8 +38,8 @@ module "vpc" {
   private_subnet_tags = merge(
     var.common_tags,
     {
-      "kubernetes.io/role/internal-elb"   = "1"
-      "kubernetes.io/cluster/${var.name}" = "shared"
+      "kubernetes.io/role/internal-elb"     = "1"
+      "kubernetes.io/cluster/${var.prefix}" = "shared"
     }
   )
 

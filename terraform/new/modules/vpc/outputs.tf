@@ -11,7 +11,7 @@ output "vpc_cidr_block" {
 
 output "vpc_name" {
   description = "Name assigned to the VPC."
-  value       = var.name
+  value       = var.prefix
 }
 
 output "availability_zones" {

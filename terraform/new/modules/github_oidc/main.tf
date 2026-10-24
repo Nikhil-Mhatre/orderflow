@@ -12,11 +12,6 @@ resource "aws_iam_openid_connect_provider" "github" {
   # AWS STS is the intended audience for GitHub's AWS role-assumption flow.
   client_id_list = ["sts.amazonaws.com"]
 
-  # Supply the certificate thumbprint used by the OIDC provider configuration.
-  thumbprint_list = [
-    data.tls_certificate.github.certificates[0].sha1_fingerprint
-  ]
-
   tags = var.common_tags
 }
 
@@ -48,7 +43,7 @@ data "aws_iam_policy_document" "github_assume_role" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/${var.github_deploy_branch}"
+        "${var.subject_claim_prefix}:ref:refs/heads/${var.github_deploy_branch}"
       ]
     }
   }
@@ -56,7 +51,7 @@ data "aws_iam_policy_document" "github_assume_role" {
 
 # Create the IAM role assumed by the GitHub Actions workflow.
 resource "aws_iam_role" "github_actions" {
-  name               = "${var.name}-github-actions"
+  name               = "${var.prefix}-role"
   assume_role_policy = data.aws_iam_policy_document.github_assume_role.json
 
   tags = var.common_tags
@@ -64,13 +59,14 @@ resource "aws_iam_role" "github_actions" {
 
 # Define the AWS permissions required by the GitHub Actions workflow.
 data "aws_iam_policy_document" "github_actions" {
+
   # Allow the workflow to authenticate to Amazon ECR.
   # GetAuthorizationToken requires Resource = "*".
   statement {
-    sid       = "ECRAuthentication"
+    sid       = "ECRAuthentication" //A label identifying this statement. It is optional but useful for readability.
     effect    = "Allow"
-    actions   = ["ecr:GetAuthorizationToken"]
-    resources = ["*"]
+    actions   = ["ecr:GetAuthorizationToken"] //Specifies which AWS API operation is allowed.
+    resources = ["*"]                         //Applies to all resources because ECR authorization-token requests do not support repository-level resource scoping.
   }
 
   # Allow image publishing and image retrieval in the specified ECR repos.
@@ -79,14 +75,23 @@ data "aws_iam_policy_document" "github_actions" {
     effect = "Allow"
 
     actions = [
+      # Checks whether image layers already exist in the repository.
       "ecr:BatchCheckLayerAvailability",
+      # Retrieves image manifests.
       "ecr:BatchGetImage",
+      # Finishes uploading image layers.
       "ecr:CompleteLayerUpload",
+      # Retrieves metadata about images and tags.
       "ecr:DescribeImages",
+      # Retrieves repository information.
       "ecr:DescribeRepositories",
+      # Gets a URL for downloading an image layer.
       "ecr:GetDownloadUrlForLayer",
+      # Starts uploading an image layer.
       "ecr:InitiateLayerUpload",
+      # Publishes an image manifest, including tagging the image.
       "ecr:PutImage",
+      # Uploads part of an image layer.
       "ecr:UploadLayerPart"
     ]
 
@@ -97,7 +102,7 @@ data "aws_iam_policy_document" "github_actions" {
 
 # Attach the permissions policy to the GitHub Actions IAM role.
 resource "aws_iam_role_policy" "github_actions" {
-  name   = "${var.name}-github-actions"
+  name   = "${var.prefix}-policy"
   role   = aws_iam_role.github_actions.id
   policy = data.aws_iam_policy_document.github_actions.json
 }

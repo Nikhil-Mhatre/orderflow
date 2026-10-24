@@ -2,11 +2,11 @@
 module "vpc" {
   source = "../../modules/vpc"
 
-  name = local.name
+  prefix = "${var.project_name}-vpc"
 
   vpc_cidr = var.vpc_cidr
 
-  availability_zones   = local.availability_zones
+  availability_zones   = var.availability_zones
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
 
@@ -17,8 +17,9 @@ module "vpc" {
 }
 
 module "ecr" {
-  source = "../../modules/ecr"
-  name   = local.name
+  source            = "../../modules/ecr"
+  prefix            = "${var.project_name}-ecr"
+  repository_prefix = var.project_name
 
   repository_names = var.ecr_repository_names
   max_image_count  = var.ecr_max_image_count
@@ -29,7 +30,7 @@ module "ecr" {
 module "eks" {
   source = "../../modules/eks"
 
-  name                         = local.name
+  prefix                       = "${var.project_name}-eks"
   endpoint_public_access_cidrs = var.endpoint_public_access_cidrs
   vpc_id                       = module.vpc.vpc_id
   private_subnets              = module.vpc.public_subnet_ids
@@ -38,19 +39,13 @@ module "eks" {
 }
 
 
-module "github-oidc" {
-  source = "../../modules/github-oidc"
+module "github_oidc" {
+  source = "../../modules/github_oidc"
 
-  # Use your existing shared project/environment name.
-  name = local.name
-
-  github_org           = var.github_org
-  github_repo          = var.github_repo
+  prefix               = "${var.project_name}-github_oidc"
+  subject_claim_prefix = var.subject_claim_prefix
   github_deploy_branch = var.github_deploy_branch
+  ecr_repository_arns  = values(module.ecr.repository_arns)
 
-  # Replace this expression if your ECR module exposes a different output.
-  ecr_repository_arns = values(module.ecr.repository_arns)
-
-  # Reuse your project's common tags.
   common_tags = local.common_tags
 }

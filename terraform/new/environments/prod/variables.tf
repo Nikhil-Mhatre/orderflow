@@ -110,14 +110,8 @@ variable "endpoint_public_access_cidrs" {
 # ***************************************************
 # ---------------------- Github OIDC ------------------------
 # ***************************************************
-variable "github_org" {
-  description = "GitHub organization or account name."
-  type        = string
-}
-
-# Repository containing the GitHub Actions workflow.
-variable "github_repo" {
-  description = "GitHub repository name, without the owner prefix."
+variable "subject_claim_prefix" {
+  description = "Github OIDC subject claim prefix"
   type        = string
 }
 

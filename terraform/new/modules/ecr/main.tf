@@ -5,7 +5,7 @@ module "ecr" {
   for_each = toset(var.repository_names)
 
   # Prefix repository names with the project and environment name.
-  repository_name = "${var.name}/${each.value}"
+  repository_name = "${var.repository_prefix}/${each.value}"
 
   # Control whether existing image tags can be overwritten.
   repository_image_tag_mutability = "IMMUTABLE"

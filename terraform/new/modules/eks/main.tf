@@ -9,7 +9,7 @@ module "eks" {
   version = "~> 21.0"
 
   # Set the EKS cluster name using the value provided by the root module.
-  name = var.name
+  name = var.prefix
 
   # Specify the Kubernetes version to run on the EKS cluster.
   kubernetes_version = 1.33

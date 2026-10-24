@@ -1,7 +1,8 @@
-variable "name" {
-  description = "EKS Cluster Name"
+variable "prefix" {
+  description = "Project, environment and module name prefix."
   type        = string
 }
+
 
 variable "kubernetes_version" {
   description = "Kubernetes version supported by EKS in the selected region."

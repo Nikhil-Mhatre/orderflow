@@ -1,12 +1,12 @@
 
-variable "name" {
-  description = "Common name prefix supplied by the root module."
+variable "prefix" {
+  description = "Project, environment and module name prefix."
   type        = string
+}
 
-  validation {
-    condition     = length(trimspace(var.name)) > 0
-    error_message = "name must not be empty."
-  }
+variable "repository_prefix" {
+  description = "Repository Prefix"
+  type        = string
 }
 
 variable "repository_names" {

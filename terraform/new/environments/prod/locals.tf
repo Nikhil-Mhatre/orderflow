@@ -4,7 +4,6 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  name = "${var.project_name}-${var.environment}"
 
   availability_zones = (
     length(var.availability_zones) > 0

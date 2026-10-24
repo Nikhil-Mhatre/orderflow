@@ -1,19 +1,13 @@
 
 # Prefix used to name the GitHub Actions IAM role and policy.
-variable "name" {
-  description = "Project and environment name prefix."
+variable "prefix" {
+  description = "Project, environment and module name prefix."
   type        = string
 }
 
-# GitHub organization or personal account that owns the repository.
-variable "github_org" {
-  description = "GitHub organization or account name."
-  type        = string
-}
-
-# Repository containing the GitHub Actions workflow.
-variable "github_repo" {
-  description = "GitHub repository name, without the owner prefix."
+# Github OIDC Subject Claim prefix
+variable "subject_claim_prefix" {
+  description = "Github OIDC subject claim prefix"
   type        = string
 }
 
