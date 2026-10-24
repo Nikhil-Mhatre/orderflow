@@ -108,9 +108,22 @@ variable "endpoint_public_access_cidrs" {
 }
 
 # ***************************************************
-# ---------------------- Github ------------------------
+# ---------------------- Github OIDC ------------------------
 # ***************************************************
-variable "github_oidc_subject" {
-  description = "Exact GitHub OIDC subject allowed to assume the deployment role."
+variable "github_org" {
+  description = "GitHub organization or account name."
   type        = string
+}
+
+# Repository containing the GitHub Actions workflow.
+variable "github_repo" {
+  description = "GitHub repository name, without the owner prefix."
+  type        = string
+}
+
+# Branch allowed to assume the deployment role.
+variable "github_deploy_branch" {
+  description = "Git branch permitted to assume the GitHub Actions IAM role."
+  type        = string
+  default     = "main"
 }

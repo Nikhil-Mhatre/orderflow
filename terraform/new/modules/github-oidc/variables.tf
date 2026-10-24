@@ -1,0 +1,44 @@
+
+# Prefix used to name the GitHub Actions IAM role and policy.
+variable "name" {
+  description = "Project and environment name prefix."
+  type        = string
+}
+
+# GitHub organization or personal account that owns the repository.
+variable "github_org" {
+  description = "GitHub organization or account name."
+  type        = string
+}
+
+# Repository containing the GitHub Actions workflow.
+variable "github_repo" {
+  description = "GitHub repository name, without the owner prefix."
+  type        = string
+}
+
+# Branch allowed to assume the deployment role.
+variable "github_deploy_branch" {
+  description = "Git branch permitted to assume the GitHub Actions IAM role."
+  type        = string
+  default     = "main"
+}
+
+# ECR repositories that GitHub Actions may publish images to or retrieve images from.
+variable "ecr_repository_arns" {
+  description = "ARNs of ECR repositories accessible to GitHub Actions."
+  type        = list(string)
+
+  validation {
+    condition     = length(var.ecr_repository_arns) > 0
+    error_message = "Provide at least one ECR repository ARN."
+  }
+}
+
+
+# Common tags passed from the root Terraform configuration.
+variable "common_tags" {
+  description = "Common tags applied to resources created by this module."
+  type        = map(string)
+  default     = {}
+}

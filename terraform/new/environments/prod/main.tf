@@ -38,14 +38,15 @@ module "eks" {
 }
 
 
-module "github_actions_iam" {
-  source = "../../modules/github"
+module "github-oidc" {
+  source = "../../modules/github-oidc"
 
   # Use your existing shared project/environment name.
   name = local.name
 
-  # Use the exact OIDC subject for your repository and workflow.
-  github_oidc_subject = var.github_oidc_subject
+  github_org           = var.github_org
+  github_repo          = var.github_repo
+  github_deploy_branch = var.github_deploy_branch
 
   # Replace this expression if your ECR module exposes a different output.
   ecr_repository_arns = values(module.ecr.repository_arns)

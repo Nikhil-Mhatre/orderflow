@@ -54,6 +54,6 @@ output "eks_cluster_endpoint" {
 # ---------------------- Github ------------------------
 # ***************************************************
 output "github_actions_role_arn" {
-  description = "IAM role ARN used by GitHub Actions."
-  value       = module.github_actions_iam.role_arn
+  description = "ARN of the IAM role assumed by GitHub Actions."
+  value       = module.github-oidc.github_actions_role_arn
 }
