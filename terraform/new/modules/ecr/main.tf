@@ -8,10 +8,10 @@ module "ecr" {
   repository_name = "${var.name}/${each.value}"
 
   # Control whether existing image tags can be overwritten.
-  repository_image_tag_mutability = var.image_tag_mutability
+  repository_image_tag_mutability = "IMMUTABLE"
 
   # Scan images for vulnerabilities when they are pushed.
-  repository_image_scan_on_push = var.scan_on_push
+  repository_image_scan_on_push = true
 
   # Encrypt repository images at rest using AES-256.
   repository_encryption_type = "AES256"

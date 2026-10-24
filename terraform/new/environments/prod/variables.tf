@@ -27,6 +27,12 @@ variable "environment" {
   }
 }
 
+variable "tags" {
+  description = "Additional tags applied to AWS resources."
+  type        = map(string)
+  default     = {}
+}
+
 # ***************************************************
 # ---------------------- VPC ------------------------
 # ***************************************************
@@ -77,30 +83,10 @@ variable "ecr_repository_names" {
   default     = ["frontend", "api", "worker"]
 }
 
-variable "ecr_image_tag_mutability" {
-  description = "Whether ECR image tags are mutable or immutable."
-  type        = string
-  default     = "IMMUTABLE"
-
-  validation {
-    condition = contains(
-      ["MUTABLE", "IMMUTABLE"],
-      var.ecr_image_tag_mutability
-    )
-    error_message = "Use MUTABLE or IMMUTABLE."
-  }
-}
-
-variable "ecr_scan_on_push" {
-  description = "Enable ECR image scanning on push."
-  type        = bool
-  default     = true
-}
-
 variable "ecr_max_image_count" {
   description = "Maximum number of images retained per ECR repository."
   type        = number
-  default     = 30
+  default     = 5
 
   validation {
     condition = (
@@ -111,8 +97,20 @@ variable "ecr_max_image_count" {
   }
 }
 
-variable "tags" {
-  description = "Additional tags applied to AWS resources."
-  type        = map(string)
-  default     = {}
+# ***************************************************
+# ---------------------- EKS ------------------------
+# ***************************************************
+
+variable "endpoint_public_access_cidrs" {
+  description = "CIDRs allowed to access the EKS public API endpoint. Restrict this to trusted IP ranges."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+# ***************************************************
+# ---------------------- Github ------------------------
+# ***************************************************
+variable "github_oidc_subject" {
+  description = "Exact GitHub OIDC subject allowed to assume the deployment role."
+  type        = string
 }
