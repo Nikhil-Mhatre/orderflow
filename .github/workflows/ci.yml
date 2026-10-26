@@ -85,7 +85,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: ./worker/api
+          context: ./backend/worker
           file: ./backend/worker/Dockerfile
           push: true
           tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}/worker:${{ github.sha }}
