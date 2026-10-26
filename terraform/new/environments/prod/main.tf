@@ -77,11 +77,8 @@ module "rds" {
 module "argocd" {
   source = "../../modules/argocd"
 
-  providers = {
-    helm = helm
-  }
 
-  eks_cluster_name = module.eks.cluster_name
+  eks_cluster_name = module.eks.eks_cluster_name
   aws_region       = var.aws_region
 
   argocd_chart_version = var.argocd_chart_version
@@ -92,6 +89,6 @@ module "argocd" {
   # Optional:
   # argocd_namespace      = "argocd"
   # root_application_name = "root-app"
-  # destination_namespace = "default"
+  destination_namespace = "orderflow"
   # enable_prune           = false
 }

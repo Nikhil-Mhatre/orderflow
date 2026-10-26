@@ -125,10 +125,6 @@ variable "github_deploy_branch" {
 # ***************************************************
 # ---------------------- ArgoCD ------------------------
 # ***************************************************
-variable "aws_region" {
-  type        = string
-  description = "AWS region containing the EKS cluster."
-}
 
 variable "argocd_chart_version" {
   type        = string
