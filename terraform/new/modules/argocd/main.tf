@@ -1,3 +1,15 @@
+terraform {
+  required_providers {
+    helm = {
+      source = "hashicorp/helm"
+    }
+
+    kubectl = {
+      source = "gavinbunney/kubectl"
+    }
+  }
+}
+
 # Install Argo CD into the EKS cluster using the official Argo Helm chart.
 resource "helm_release" "argocd" {
   # Helm release name.
@@ -32,55 +44,47 @@ resource "helm_release" "argocd" {
           type = "ClusterIP"
         }
       }
-
-      # Create an Argo CD Application that tracks the GitOps repository.
-      extraObjects = [
-        {
-          apiVersion = "argoproj.io/v1alpha1"
-          kind       = "Application"
-
-          # The Application must be created in the Argo CD namespace.
-          metadata = {
-            name      = var.root_application_name
-            namespace = var.argocd_namespace
-          }
-
-          spec = {
-            # Use the default Argo CD project.
-            project = "default"
-
-            # Define the Git repository and directory containing manifests.
-            source = {
-              repoURL        = var.gitops_repo_url
-              targetRevision = var.gitops_revision
-              path           = var.gitops_path
-            }
-
-            # Deploy resources to the local Kubernetes cluster.
-            destination = {
-              server    = "https://kubernetes.default.svc"
-              namespace = var.destination_namespace
-            }
-
-            # Automatically reconcile cluster state with Git.
-            syncPolicy = {
-              automated = {
-                # Delete resources removed from Git only when explicitly enabled.
-                prune = var.enable_prune
-
-                # Reconcile manual changes in the cluster back to Git state.
-                selfHeal = true
-
-                # Prevent pruning all managed resources when the source is empty.
-                allowEmpty = false
-              }
-
-              # Create the destination namespace if it does not exist.
-              syncOptions = ["CreateNamespace=true"]
-            }
-          }
-        }
-      ]
     })
+  ]
+}
+
+resource "kubectl_manifest" "root_application" {
+  yaml_body = yamlencode({
+    apiVersion = "argoproj.io/v1alpha1"
+    kind       = "Application"
+
+    metadata = {
+      name      = var.root_application_name
+      namespace = var.argocd_namespace
+    }
+
+    spec = {
+      project = "default"
+
+      source = {
+        repoURL        = var.gitops_repo_url
+        targetRevision = var.gitops_revision
+        path           = var.gitops_path
+      }
+
+      destination = {
+        server    = "https://kubernetes.default.svc"
+        namespace = var.destination_namespace
+      }
+
+      syncPolicy = {
+        automated = {
+          selfHeal   = true
+          prune      = var.enable_prune
+          allowEmpty = false
+        }
+
+        syncOptions = ["CreateNamespace=true"]
+      }
+    }
+  })
+
+  depends_on = [
+    helm_release.argocd
   ]
 }

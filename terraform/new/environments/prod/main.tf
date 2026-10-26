@@ -33,7 +33,7 @@ module "eks" {
   prefix                       = "${var.project_name}-eks"
   endpoint_public_access_cidrs = var.endpoint_public_access_cidrs
   vpc_id                       = module.vpc.vpc_id
-  private_subnets              = module.vpc.public_subnet_ids
+  private_subnets              = module.vpc.private_subnet_ids
 
   common_tags = local.common_tags
 }
@@ -76,7 +76,6 @@ module "rds" {
 
 module "argocd" {
   source = "../../modules/argocd"
-
 
   eks_cluster_name = module.eks.eks_cluster_name
   aws_region       = var.aws_region
