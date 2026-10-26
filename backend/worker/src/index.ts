@@ -9,6 +9,8 @@ import { createShutdownHandler } from "./db/shutdown.db.js";
 import { logger } from "./config/logger.js";
 import { SqsClient } from "./infrastructure/aws/sqs.client.js";
 
+// test 6
+
 /**
  * Application entry point.
  *
