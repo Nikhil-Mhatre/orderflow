@@ -33,6 +33,19 @@ ecr_max_image_count = 30
 subject_claim_prefix = <GET_IT_FROM_GITHUB_REPO_SETTINGS>
 github_deploy_branch = "main"
 
+eks_cluster_name     = "replace-with-your-eks-cluster-name"
+
+# Set this to a tested, pinned chart version from the argo-helm repository.
+argocd_chart_version = "REPLACE_WITH_TESTED_CHART_VERSION"
+
+gitops_repo_url = "https://github.com/YOUR_ORG/YOUR_GITOPS_REPO.git"
+gitops_revision = "main"
+gitops_path     = "environments/dev"
+
+# Keep false until you have reviewed all resources under gitops_path.
+enable_prune = false
+
+
 tags = {
   ManagedBy   = "Terraform"
 }

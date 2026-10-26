@@ -121,3 +121,33 @@ variable "github_deploy_branch" {
   type        = string
   default     = "main"
 }
+
+# ***************************************************
+# ---------------------- ArgoCD ------------------------
+# ***************************************************
+variable "aws_region" {
+  type        = string
+  description = "AWS region containing the EKS cluster."
+}
+
+variable "argocd_chart_version" {
+  type        = string
+  description = "Argo CD Helm chart version."
+  default     = "10.11.1"
+}
+
+variable "gitops_repo_url" {
+  type        = string
+  description = "HTTPS URL of the GitOps repository."
+}
+
+variable "gitops_revision" {
+  type        = string
+  description = "Git branch, tag, or commit Argo CD should track."
+  default     = "main"
+}
+
+variable "gitops_path" {
+  type        = string
+  description = "Path in the GitOps repository to sync."
+}

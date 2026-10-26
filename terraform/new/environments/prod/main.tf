@@ -72,3 +72,26 @@ module "rds" {
 
   common_tags = local.common_tags
 }
+
+
+module "argocd" {
+  source = "../../modules/argocd"
+
+  providers = {
+    helm = helm
+  }
+
+  eks_cluster_name = module.eks.cluster_name
+  aws_region       = var.aws_region
+
+  argocd_chart_version = var.argocd_chart_version
+  gitops_repo_url      = var.gitops_repo_url
+  gitops_revision      = var.gitops_revision
+  gitops_path          = var.gitops_path
+
+  # Optional:
+  # argocd_namespace      = "argocd"
+  # root_application_name = "root-app"
+  # destination_namespace = "default"
+  # enable_prune           = false
+}

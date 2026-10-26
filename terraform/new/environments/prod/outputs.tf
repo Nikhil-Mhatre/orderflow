@@ -57,3 +57,21 @@ output "github_actions_role_arn" {
   description = "ARN of the IAM role assumed by GitHub Actions."
   value       = module.github_oidc.github_actions_role_arn
 }
+
+# ***************************************************
+# ---------------------- Github ------------------------
+# ***************************************************
+output "argocd_namespace" {
+  description = "Namespace where Argo CD is installed."
+  value       = module.argocd.namespace
+}
+
+output "argocd_release_status" {
+  description = "Terraform's Helm release status for Argo CD."
+  value       = module.argocd.release_status
+}
+
+output "root_application_name" {
+  description = "Name of the bootstrap Application."
+  value       = module.argocd.root_application_name
+}
