@@ -77,6 +77,6 @@ resource "aws_eks_pod_identity_association" "external_secrets" {
 
   depends_on = [
     aws_iam_role_policy_attachment.read_rds_secret,
-    helm_release.external_secrets
+    # helm_release.external_secrets
   ]
 }
