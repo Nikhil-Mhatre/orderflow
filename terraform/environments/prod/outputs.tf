@@ -60,6 +60,38 @@ output "rds_master_secret_arn" {
 }
 
 # ***************************************************
+# ---------------------- SQS ------------------------
+# ***************************************************
+
+output "queue_url" {
+  value       = module.worker_events.queue_url
+  description = "URL for the worker's primary queue."
+}
+
+output "queue_arn" {
+  value       = module.worker_events.queue_arn
+  description = "ARN for IAM policies granting the worker access."
+}
+
+output "processing_dlq_arn" {
+  value       = module.worker_events.processing_dlq_arn
+  description = "ARN of the processing failure DLQ."
+}
+
+output "eventbridge_rule_arn" {
+  value       = module.worker_events.eventbridge_rule_arn
+  description = "ARN of the EventBridge rule."
+}
+
+output "eventbridge_delivery_dlq_arn" {
+  value       = module.worker_events.eventbridge_delivery_dlq_arn
+  description = "ARN of the EventBridge target delivery DLQ."
+}
+
+
+
+
+# ***************************************************
 # ---------------------- Github ------------------------
 # ***************************************************
 output "github_actions_role_arn" {

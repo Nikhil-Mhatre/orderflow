@@ -45,28 +45,28 @@ resource "aws_iam_role_policy_attachment" "read_rds_secret" {
 }
 
 //creating service account for consuming secret
-resource "helm_release" "external_secrets" {
-  name       = "external-secrets"
-  repository = "https://charts.external-secrets.io"
-  chart      = "external-secrets"
-  version    = var.helm_chart_version
-  namespace  = var.namespace
+# resource "helm_release" "external_secrets" {
+#   name       = "external-secrets"
+#   repository = "https://charts.external-secrets.io"
+#   chart      = "external-secrets"
+#   version    = var.helm_chart_version
+#   namespace  = var.namespace
 
-  create_namespace = true
+#   create_namespace = true
 
-  wait    = true
-  atomic  = true
-  timeout = 600
+#   wait    = true
+#   atomic  = true
+#   timeout = 600
 
-  values = [
-    yamlencode({
-      serviceAccount = {
-        create = true
-        name   = "external-secrets"
-      }
-    })
-  ]
-}
+#   values = [
+#     yamlencode({
+#       serviceAccount = {
+#         create = true
+#         name   = "external-secrets"
+#       }
+#     })
+#   ]
+# }
 
 // Attaching the role to the service account
 resource "aws_eks_pod_identity_association" "external_secrets" {

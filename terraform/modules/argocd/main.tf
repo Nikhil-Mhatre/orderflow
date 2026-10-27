@@ -48,43 +48,43 @@ resource "helm_release" "argocd" {
   ]
 }
 
-resource "kubectl_manifest" "root_application" {
-  yaml_body = yamlencode({
-    apiVersion = "argoproj.io/v1alpha1"
-    kind       = "Application"
+# resource "kubectl_manifest" "root_application" {
+#   yaml_body = yamlencode({
+#     apiVersion = "argoproj.io/v1alpha1"
+#     kind       = "Application"
 
-    metadata = {
-      name      = var.root_application_name
-      namespace = var.argocd_namespace
-    }
+#     metadata = {
+#       name      = var.root_application_name
+#       namespace = var.argocd_namespace
+#     }
 
-    spec = {
-      project = "default"
+#     spec = {
+#       project = "default"
 
-      source = {
-        repoURL        = var.gitops_repo_url
-        targetRevision = var.gitops_revision
-        path           = var.gitops_path
-      }
+#       source = {
+#         repoURL        = var.gitops_repo_url
+#         targetRevision = var.gitops_revision
+#         path           = var.gitops_path
+#       }
 
-      destination = {
-        server    = "https://kubernetes.default.svc"
-        namespace = var.destination_namespace
-      }
+#       destination = {
+#         server    = "https://kubernetes.default.svc"
+#         namespace = var.destination_namespace
+#       }
 
-      syncPolicy = {
-        automated = {
-          selfHeal   = true
-          prune      = var.enable_prune
-          allowEmpty = false
-        }
+#       syncPolicy = {
+#         automated = {
+#           selfHeal   = true
+#           prune      = var.enable_prune
+#           allowEmpty = false
+#         }
 
-        syncOptions = ["CreateNamespace=true"]
-      }
-    }
-  })
+#         syncOptions = ["CreateNamespace=true"]
+#       }
+#     }
+#   })
 
-  depends_on = [
-    helm_release.argocd
-  ]
-}
+#   depends_on = [
+#     helm_release.argocd
+#   ]
+# }

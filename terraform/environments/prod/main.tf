@@ -73,6 +73,29 @@ module "rds" {
   common_tags = local.common_tags
 }
 
+module "worker_events" {
+  source = "../../modules/sqs-eventbridge"
+
+  name_prefix = "demo-${var.environment}-worker"
+
+  # Example: EventBridge sends a scheduled event every five minutes.
+  schedule_expression = "rate(5 minutes)"
+  event_pattern_json  = null
+
+  visibility_timeout_seconds = 60
+  max_receive_count          = 5
+
+  create_eventbridge_delivery_dlq = true
+
+  tags = {
+    Project     = "devops"
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+
+
 
 module "external_secrets" {
   source = "../../modules/external_secrets"
