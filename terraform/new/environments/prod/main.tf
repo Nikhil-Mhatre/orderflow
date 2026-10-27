@@ -74,6 +74,22 @@ module "rds" {
 }
 
 
+module "external_secrets" {
+  source = "../../modules/external_secrets"
+
+  cluster_name          = module.eks.eks_cluster_name
+  aws_region            = var.aws_region
+  rds_master_secret_arn = module.rds.db_master_user_secret_arn
+
+  helm_chart_version = var.helm_chart_version
+
+  depends_on = [
+    module.eks,
+    module.rds
+  ]
+}
+
+
 module "argocd" {
   source = "../../modules/argocd"
 
@@ -90,4 +106,6 @@ module "argocd" {
   # root_application_name = "root-app"
   destination_namespace = "orderflow"
   # enable_prune           = false
+
+  depends_on = [module.external_secrets]
 }

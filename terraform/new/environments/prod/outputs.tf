@@ -51,6 +51,15 @@ output "eks_cluster_endpoint" {
 }
 
 # ***************************************************
+# ---------------------- RDS ------------------------
+# ***************************************************
+output "rds_master_secret_arn" {
+  description = "ARN of the RDS-managed master credentials secret"
+  value       = module.rds.db_master_user_secret_arn
+  sensitive   = true
+}
+
+# ***************************************************
 # ---------------------- Github ------------------------
 # ***************************************************
 output "github_actions_role_arn" {
@@ -59,7 +68,7 @@ output "github_actions_role_arn" {
 }
 
 # ***************************************************
-# ---------------------- Github ------------------------
+# ---------------------- Argocd ------------------------
 # ***************************************************
 output "argocd_namespace" {
   description = "Namespace where Argo CD is installed."
